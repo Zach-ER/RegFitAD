@@ -11,18 +11,17 @@ f = @(x)obj_func_direct_fit(x,DW,W,bMat);
 % end
 
 options = optimoptions(@lsqnonlin,...
-    'display','none',...
-    'tolfun',1e-30',...
-    'tolx',1e-30,...
+    'display','iter-detailed',...
+    'tolfun',1e-6',...
+    'tolx',1e-6,...
     'diffMinChange',1e-4,...
-    'UseParallel',false,...
     'MaxFunEvals',5000);
 
-lb = zeros(size(initParams))-eps;
+lb = 1e-9.*ones(size(initParams));
 ub = 3.5 * ones(size(initParams));
 
-[paramVals,finalDiff] = fmincon(f,initParams,[],[],[],[],lb,...
-    ub,[],options);
+[paramVals,finalDiff] = lsqnonlin(f,initParams,lb,...
+    ub,options);
 
 end
 
@@ -30,15 +29,13 @@ end
 %diagonals, because in every voxel we've pre-accounted for the directions. 
 
 
-function SSD = obj_func_direct_fit(paramVals,DW,W,bMat)
+function differences = obj_func_direct_fit(paramVals,DW,W,bMat)
 
 %paramMat = vals_to_mat(paramVals);
 
-voxelParameters = W *paramVals;
-sigGuess = DT_diag_forward; 
-differences = DW(:) - sigGuess(:);
-SSD = double(sum(differences .^2));
-
+voxParams = W * paramVals;
+sigGuess = DT_diag_forward( bMat,voxParams);
+differences = double(DW - sigGuess);
 
 end
 
