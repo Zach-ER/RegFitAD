@@ -5,20 +5,20 @@ function  paramVals  = direct_fit_DT_AD( DW,W,bMat,initParams,sig,riceInd)
 %voxel in the region. 
 
 % if ~riceInd
-f = @(x)obj_func_direct_fit(x,DW,W,bMat);
+f = @(x)obj_func_direct_fit(x,DW,W,bMat,sig);
 % else
 %     f = @(x)obj_func_rician(x,DW,W,bMat,sig);
 % end
 
 options = optimoptions(@lsqnonlin,...
-    'display','iter-detailed',...
+    'display','none',...
     'tolfun',1e-6',...
     'tolx',1e-6,...
     'diffMinChange',1e-4,...
     'MaxFunEvals',5000);
 
 lb = 1e-9.*ones(size(initParams));
-ub = 3.5 * ones(size(initParams));
+ub = 3.5e-3 * ones(size(initParams));
 
 [paramVals,finalDiff] = lsqnonlin(f,initParams,lb,...
     ub,options);
@@ -29,32 +29,16 @@ end
 %diagonals, because in every voxel we've pre-accounted for the directions. 
 
 
-function differences = obj_func_direct_fit(paramVals,DW,W,bMat)
+function differences = obj_func_direct_fit(paramVals,DW,W,bMat,sig)
 
 %paramMat = vals_to_mat(paramVals);
 
 voxParams = W * paramVals;
 sigGuess = DT_diag_forward( bMat,voxParams);
-differences = double(DW - sigGuess);
+differences = double(DW - sqrt(sigGuess.^2 + sig.^2));
 
 end
 
 
-function lse = obj_func_rician(paramVals,DW,W,bvals,bvecs,sig)
-%see ferizi, 2013 ish 
-%note, noise should really vary with sigma, right? 
-
-% paramMat = vals_to_mat(paramVals);
-
-Phi = DT_forward( bMat,paramVals');
-sigGuess = W * Phi; 
-
-lse = sum((DW(:) - sqrt(sigGuess(:).^2 + sig.^2)).^2);
-lse = double(lse);
-
-if sig > 0
-    lse = lse /sig.^2;
-end
-end
 
 
