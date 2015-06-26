@@ -37,17 +37,26 @@ load(fullfile(subjDir,'bvecs.txt'));
 %going to use the brain-mask generated from the segmentation
 bMask = load_untouch_nii(maskName); bMask= bMask.img > 0.5 & sum(Segs,4) > 0.5; 
 
+%going to exclude voxels where the b = 0 are not the highest values
+
+DW = DW./repmat(S0,[1 1 1 size(DW,4)]);
+DW2 = DW(:,:,:,bvals==1000);
+DW2 = sum(DW2 > 1.1,4) > 0;
+bMask(DW2) = 0; 
+
+
+
 
 %% 
 [~,bMat,bMask] = prepare_b_matrices(subjDir,DTDir,bMask,bvals,bvecs);
 
 %%
-DW = DW./repmat(S0,[1 1 1 size(DW,4)]);
 
 W = flattener_4d(Segs,bMask);
 DW = flattener_4d(DW,bMask);
 k = size(W,2);
-initParams = repmat([1.7e-3, .1e-3,.1e-3],[k 1]);
+initParams = repmat([1.7e-3, 1.2e-3,1.1e-3],[k 1]);
+initParams(1,:) = [3e-3,3e-3,3e-3];
 % 
 % b0Indices = bvals==0; 
 % for ii = 1:size(DW,1)
@@ -56,7 +65,8 @@ initParams = repmat([1.7e-3, .1e-3,.1e-3],[k 1]);
 
 
 %%
-paramVals = direct_fit_DT_AD(DW,W,bMat,initParams,0.05,0);
+riceNoise = 0; SSDind = 0;  
+paramVals = direct_fit_DT_AD(DW,W,bMat,initParams,riceNoise,SSDind);
 
 guessedSigs = DT_diag_forward(bMat,W*paramVals);
 
