@@ -10,18 +10,21 @@ f = @(x)obj_func_direct_fit(x,DW,W,bMat,sig);
 %     f = @(x)obj_func_rician(x,DW,W,bMat,sig);
 % end
 
-options = optimoptions(@lsqnonlin,...
-    'display','none',...
+options = optimoptions(@fmincon,...
+    'display','iter-detailed',...
     'tolfun',1e-6',...
     'tolx',1e-6,...
     'diffMinChange',1e-4,...
     'MaxFunEvals',5000);
 
-lb = 1e-9.*ones(size(initParams));
+lb = 1e-6.*ones(size(initParams));
 ub = 3.5e-3 * ones(size(initParams));
 
-[paramVals,finalDiff] = lsqnonlin(f,initParams,lb,...
-    ub,options);
+%[paramVals,finalDiff] = lsqnonlin(f,initParams,lb,...
+%    ub,options);
+[paramVals,finalDiff] = fmincon(f,initParams,[],[],[],[],lb,...
+    ub,[],options);
+
 
 end
 
@@ -36,6 +39,7 @@ function differences = obj_func_direct_fit(paramVals,DW,W,bMat,sig)
 voxParams = W * paramVals;
 sigGuess = DT_diag_forward( bMat,voxParams);
 differences = double(DW - sqrt(sigGuess.^2 + sig.^2));
+differences = sum(differences(:).^2);
 
 end
 
