@@ -31,10 +31,10 @@ load(fullfile(subjDir,'bvals.txt'));
 load(fullfile(subjDir,'bvecs.txt'));
 
 %going to use the brain-mask generated from the segmentation
+bMask = load_untouch_nii(maskName); bMask= bMask.img > 0.5 & sum(Segs,4) > 0.5; 
 
 
-%% bMask = load_untouch_nii(maskName); bMask= bMask.img > 0.5 & sum(Segs,4) > 0.5; 
-
+%% 
 [~,bMat,bMask] = prepare_b_matrices(subjDir,DTDir,bMask,bvals,bvecs);
 
 %%
