@@ -4,27 +4,35 @@ function  paramVals  = direct_fit_DT_AD( DW,W,bMat,initParams,sig,riceInd)
 %b-vectors rotated so that the same principal eigenvalues can describe each
 %voxel in the region. 
 
-% if ~riceInd
-f = @(x)obj_func_direct_fit(x,DW,W,bMat,sig);
-% else
-%     f = @(x)obj_func_rician(x,DW,W,bMat,sig);
-% end
+SSDind = 0; 
+f = @(x)obj_func_direct_fit(x,DW,W,bMat,sig,SSDind);
 
+if SSDind
 options = optimoptions(@fmincon,...
     'display','iter-detailed',...
     'tolfun',1e-6',...
     'tolx',1e-6,...
     'diffMinChange',1e-4,...
-    'MaxFunEvals',5000);
+    'MaxFunEvals',1200);
+else
+options = optimoptions(@lsqnonlin,...
+    'display','iter-detailed',...
+    'tolfun',1e-6',...
+    'tolx',1e-6,...
+    'diffMinChange',1e-4,...
+    'MaxFunEvals',1200);
+end
 
 lb = 1e-6.*ones(size(initParams));
 ub = 3.5e-3 * ones(size(initParams));
 
-%[paramVals,finalDiff] = lsqnonlin(f,initParams,lb,...
-%    ub,options);
-[paramVals,finalDiff] = fmincon(f,initParams,[],[],[],[],lb,...
+if SSDind
+    [paramVals,finalDiff] = fmincon(f,initParams,[],[],[],[],lb,...
     ub,[],options);
-
+else
+    [paramVals,finalDiff] = lsqnonlin(f,initParams,lb,...
+    ub,options);
+end
 
 end
 
@@ -32,14 +40,19 @@ end
 %diagonals, because in every voxel we've pre-accounted for the directions. 
 
 
-function differences = obj_func_direct_fit(paramVals,DW,W,bMat,sig)
+function differences = obj_func_direct_fit(paramVals,DW,W,bMat,sig,SSDind)
 
 %paramMat = vals_to_mat(paramVals);
 
 voxParams = W * paramVals;
 sigGuess = DT_diag_forward( bMat,voxParams);
 differences = double(DW - sqrt(sigGuess.^2 + sig.^2));
+
+if SSDind
 differences = sum(differences(:).^2);
+else
+differences = sum(abs(differences),2);    
+end
 
 end
 

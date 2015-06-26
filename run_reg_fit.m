@@ -16,7 +16,11 @@ else
     segName = fullfile(subjDir,'segs_diff.nii.gz');
     Segs = load_untouch_nii(segName);
     Labs = load_untouch_nii(labName);
-    Segs.img = cat(4,Segs.img(:,:,:,[1,3]),Labs.img(:,:,:,2:end));
+    
+    labelSum = sum(Labs.img(:,:,:,2:end),4);
+    closeToCort = bwdist(labelSum>.1) < 1.5; 
+    
+    Segs.img = cat(4,Segs.img(:,:,:,[1,3]).*repmat(closeToCort,[1 1 1 2]),Labs.img(:,:,:,2:end));
 end
 
 DTDir = fullfile(subjDir,'DT');
