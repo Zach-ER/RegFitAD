@@ -14,13 +14,16 @@ else
     DWname = fullfile(subjDir,'4156_corrected_dwi.nii.gz');
     labName = fullfile(subjDir,'labs_diff.nii.gz');
     segName = fullfile(subjDir,'segs_diff.nii.gz');
+    FAName = fullfile(DTDir,'DT_FA.nii.gz');
     Segs = load_untouch_nii(segName);
     Labs = load_untouch_nii(labName);
     
     labelSum = sum(Labs.img(:,:,:,2:end),4);
     closeToCort = bwdist(labelSum>.1) < 1.5; 
     
+    FAholder = load_untouch_nii(FAName);
     Segs.img = cat(4,Segs.img(:,:,:,[1,3]).*repmat(closeToCort,[1 1 1 2]),Labs.img(:,:,:,2:end));
+       
 end
 
 DTDir = fullfile(subjDir,'DT');
@@ -77,9 +80,27 @@ MD = mean(paramVals,2);
 tmp = (paramVals - repmat(MD,[1 3])).^2;
 FA = sqrt(1.5) .* sqrt( sum(tmp,2))./sqrt(sum(paramVals.^2,2));
 
+%%
+
+MDimg = zeros(size(bMask)); MDimg(bMask) = W*MD; 
+FAimg = zeros(size(bMask)); FAimg(bMask) = W*FA; 
+
+FAholder.img(:,:,:,1) = MDimg*1e3; 
+FAholder.img(:,:,:,2) = FAimg; 
+FAholder.hdr.dime.dim(1) = 4; FAholder.hdr.dime.dim(5) = 2; 
+save_untouch_nii(FAholder,fullfile(DTDir,'regFitted.nii.gz'));
+
+%%
+fittedSigs = load_untouch_nii(DWname);
+tmpImg = zeros(size(bMask));
+for ii = 1:size(fittedSigs.img,4)
+    
+    tmpImg(bMask) = guessedSigs(:,ii);
+    fittedSigs.img(:,:,:,ii) = tmpImg;
+    
+end
 
 
-
-
+save_untouch_nii(fittedSigs,fullfile(DTDir,'regSigs.nii.gz'));
 
 
