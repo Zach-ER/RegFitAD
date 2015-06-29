@@ -49,8 +49,8 @@ differences = double(DW - sqrt(sigGuess.^2 + sig.^2));
 
 if SSDind
 differences = sum(differences(:).^2);
-else
-differences = sqrt(sum(differences.^2,2));    
+% else
+% differences = sqrt(sum(differences.^2,2));    
 end
 
 end
