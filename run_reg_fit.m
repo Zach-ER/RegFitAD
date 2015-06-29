@@ -49,6 +49,11 @@ badDWInds = sum(badDWInds > 1.1,4) > 0;
 bMask(badDWInds) = 0; 
 
 
+%%
+%reducing the acquisition for the first pass 
+exclusionInds = []; 
+bvals(exclusionInds) = []; bvecs(:,exclusionInds) = [];
+DW(:,:,:,exclusionInds) = []; 
 
 
 %% 
@@ -66,7 +71,7 @@ initParams(1,:) = [3e-3,3e-3,3e-3];
 
 
 %%
-riceNoise = sqrt(5); SSDind = 0;  
+riceNoise = sqrt(10); SSDind = 0;  
 paramVals = direct_fit_DT_AD(S0,DW,W,bMat,initParams,riceNoise,SSDind);
 
 guessedSigs = DT_diag_forward(bMat,W*paramVals);
