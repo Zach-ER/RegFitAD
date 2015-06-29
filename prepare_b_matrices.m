@@ -15,6 +15,7 @@ defaultDirec = [1; 0; 0];
 
 ctr = 1; 
 
+bMat = zeros(sum(bMask(:)),130,3);
 for iz = 1:size(bMask,3)
 for iy = 1:size(bMask,2)
 for ix = 1:size(bMask,1)
@@ -32,9 +33,8 @@ for ix = 1:size(bMask,1)
         b = [g(:,1).^2 2*g(:,1).*g(:,2) 2*g(:,1).*g(:,3) g(:,2).^2 2*g(:,2).*g(:,3) g(:,3).^2];
         b = repmat(bvals(:),[1 6]).*b;
         
-        bMat{ctr} = b(:,[1,4,6]);
+        bMat(ctr,:,:) = b(:,[1,4,6]);
         ctr= ctr+1;
-        
     end
 end
 end

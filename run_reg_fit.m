@@ -11,6 +11,7 @@ if babInd
     Segs = load_untouch_nii(segName);
 else
     subjDir = '../data/4156';
+    DTDir = fullfile(subjDir,'DT');
     DWname = fullfile(subjDir,'4156_corrected_dwi.nii.gz');
     labName = fullfile(subjDir,'labs_diff.nii.gz');
     segName = fullfile(subjDir,'segs_diff.nii.gz');
@@ -42,10 +43,10 @@ bMask = load_untouch_nii(maskName); bMask= bMask.img > 0.5 & sum(Segs,4) > 0.5;
 
 %going to exclude voxels where the b = 0 are not the highest values
 
-DW = DW./repmat(S0,[1 1 1 size(DW,4)]);
-DW2 = DW(:,:,:,bvals==1000);
-DW2 = sum(DW2 > 1.1,4) > 0;
-bMask(DW2) = 0; 
+DW2 = DW./repmat(S0,[1 1 1 size(DW,4)]);
+badDWInds = DW2(:,:,:,bvals==1000);
+badDWInds = sum(badDWInds > 1.1,4) > 0;
+bMask(badDWInds) = 0; 
 
 
 
@@ -57,19 +58,16 @@ bMask(DW2) = 0;
 
 W = flattener_4d(Segs,bMask);
 DW = flattener_4d(DW,bMask);
+S0 = S0(bMask);
+
 k = size(W,2);
 initParams = repmat([1.7e-3, 1.2e-3,1.1e-3],[k 1]);
 initParams(1,:) = [3e-3,3e-3,3e-3];
-% 
-% b0Indices = bvals==0; 
-% for ii = 1:size(DW,1)
-%     DW(ii,:) = DW(ii,:)./(mean(DW((ii),b0Indices))+eps);
-% end
 
 
 %%
-riceNoise = 0; SSDind = 0;  
-paramVals = direct_fit_DT_AD(DW,W,bMat,initParams,riceNoise,SSDind);
+riceNoise = sqrt(5); SSDind = 0;  
+paramVals = direct_fit_DT_AD(S0,DW,W,bMat,initParams,riceNoise,SSDind);
 
 guessedSigs = DT_diag_forward(bMat,W*paramVals);
 
