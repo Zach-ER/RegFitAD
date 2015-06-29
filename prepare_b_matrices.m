@@ -15,7 +15,7 @@ defaultDirec = [1; 0; 0];
 
 ctr = 1; 
 
-bMat = zeros(sum(bMask(:)),130,3);
+bMat = zeros(sum(bMask(:)),length(bvals),3);
 for iz = 1:size(bMask,3)
 for iy = 1:size(bMask,2)
 for ix = 1:size(bMask,1)
