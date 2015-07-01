@@ -48,7 +48,6 @@ badDWInds = DW2(:,:,:,bvals==1000);
 badDWInds = sum(badDWInds > 1.1,4) > 0;
 bMask(badDWInds) = 0; 
 
-
 %%
 %reducing the acquisition for the first pass 
 exclusionInds = []; 
@@ -65,17 +64,31 @@ W = flattener_4d(Segs,bMask);
 DW = flattener_4d(DW,bMask);
 S0 = S0(bMask);
 
+%%
+%going to exclude voxels in the CSF with S0 below a certain threshold, as I
+%think these are erroneous. 
+% csfInds = find(W(:,1) > 0.98);
+% badCsfInds = find(S0(csfInds)<100);
+% W(badCsfInds,:) = [];
+% DW(badCsfInds,:) = [];
+% S0(badCsfInds,:) = [];
+% bMat(badCsfInds,:,:) = []; 
+% 
+% indices = find(bMask);
+% bMask(indices(badCsfInds)) = 0; 
+
+%%
 k = size(W,2);
 initParams = repmat([1.7e-3, 1.2e-3,1.1e-3],[k 1]);
 initParams(1,:) = [3e-3,3e-3,3e-3];
 
 
 %%
-riceNoise = sqrt(10); SSDind = 0;  
+riceNoise = sqrt(5); SSDind = 0;  
 paramVals = direct_fit_DT_AD(S0,DW,W,bMat,initParams,riceNoise,SSDind);
 
 guessedSigs = DT_diag_forward(bMat,W*paramVals);
-
+sigDiffs = sum((sqrt(guessedSigs.^2 + riceNoise.^2) - DW).^2,2); 
 
 %%
 MD = mean(paramVals,2); 
@@ -87,6 +100,7 @@ FA = sqrt(1.5) .* sqrt( sum(tmp,2))./sqrt(sum(paramVals.^2,2));
 
 MDimg = zeros(size(bMask)); MDimg(bMask) = W*MD; 
 FAimg = zeros(size(bMask)); FAimg(bMask) = W*FA; 
+SSDimg = zeros(size(bMask)); SSDimg(bMask) = sigDiffs; 
 
 FAholder.img(:,:,:,1) = MDimg*1e3; 
 FAholder.img(:,:,:,2) = FAimg; 

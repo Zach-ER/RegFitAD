@@ -19,7 +19,7 @@ options = optimoptions(@lsqnonlin,...
     'tolfun',1e-6',...
     'tolx',1e-6,...
     'diffMinChange',1e-4,...
-    'MaxFunEvals',1000);
+    'MaxFunEvals',10000);
 end
 
 lb = 1e-6.*ones(size(initParams));
@@ -47,10 +47,11 @@ voxParams = W * paramVals;
 sigGuess = repmat(S0,[1 size(DW,2)]).*DT_diag_forward( bMat,voxParams);
 differences = double(DW - sqrt(sigGuess.^2 + sig.^2));
 
+
 if SSDind
-differences = sum(differences(:).^2);
+    differences = sum(differences(:).^2);
 else
-differences = sqrt(sum(differences.^2,2));    
+    differences = sqrt(sum(differences.^2,2));    
 end
 
 end
