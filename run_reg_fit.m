@@ -49,7 +49,7 @@ badDWInds = sum(badDWInds > 1.1,4) > 0;
 bMask(badDWInds) = 0; 
 
 %%
-%reducing the acquisition for the first pass 
+%seeing if it's faster on a subset of the data - but it's not really 
 exclusionInds = []; 
 bvals(exclusionInds) = []; bvecs(:,exclusionInds) = [];
 DW(:,:,:,exclusionInds) = []; 
@@ -82,10 +82,21 @@ k = size(W,2);
 initParams = repmat([1.7e-3, 1.2e-3,1.1e-3],[k 1]);
 initParams(1,:) = [3e-3,3e-3,3e-3];
 
+%%
+%bit for changing the approach into a phantom problem. 
+gsParams = rand(size(initParams)).*5e-3;
+
+for ii = 1:length(gsParams)
+gsParams(ii,:) = sort(gsParams(ii,:),'descend');
+end
+dwGS = repmat(S0,[1 size(DW,2)]).*DT_diag_forward(bMat,W*gsParams);
 
 %%
-riceNoise = sqrt(5); SSDind = 0;  
-paramVals = direct_fit_DT_AD(S0,DW,W,bMat,initParams,riceNoise,SSDind);
+riceNoise = 0; SSDind = 0;  
+
+%paramVals = direct_fit_DT_AD(S0,DW,W,bMat,initParams,riceNoise,SSDind);
+paramVals = direct_fit_DT_AD(S0,dwGS,W,bMat,initParams,riceNoise,SSDind);
+
 
 guessedSigs = DT_diag_forward(bMat,W*paramVals);
 sigDiffs = sum((sqrt(guessedSigs.^2 + riceNoise.^2) - DW).^2,2); 
