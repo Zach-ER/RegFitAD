@@ -23,7 +23,7 @@ options = optimoptions(@lsqnonlin,...
 end
 
 lb = 1e-6.*ones(size(initParams));
-ub = 5.5e-3 * ones(size(initParams));
+ub = 4e-3 * ones(size(initParams));
 
 if SSDind
     [paramVals,finalDiff] = fmincon(f,initParams,[],[],[],[],lb,...
