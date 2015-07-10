@@ -37,7 +37,6 @@ for ID in subjIds[:1]:
     segOut = os.path.join(resDir,'SegDiff.nii.gz') 
     parcelOut = os.path.join(resDir,'ParcelDiff.nii.gz') 
     
-    f = open('runResampling.sh', 'rw')
     all_lines = []
     all_lines.append(reg_resample_psf(dwiFile,BMname,affFile,BMout) + '\n')
     all_lines.append(reg_resample_psf(dwiFile,segName,affFile,segOut)+ '\n')
@@ -48,5 +47,5 @@ for ID in subjIds[:1]:
     for line in all_lines:
         fh.write(line)
     f.close()
-    os.system('qsub runSingleSub.sh')
+    os.system('qsub tmpResampling.sh')
 
