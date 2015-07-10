@@ -15,7 +15,7 @@ dataDir = '/scratch2/mmodat/ivor/nico/data/drc/Phil/cortical_diffusion/';
 DTDir = fullfile(outDir,'DT');
 
 %name boilerplate
-DWname = fullfile(dataDir,subjID + '_corrected_dwi.nii.gz');
+DWname = fullfile(dataDir,[subjID,'_corrected_dwi.nii.gz']);
 
 FreeSurfName = fullfile(outDir,'LabsDiff.nii.gz');
 segName = fullfile(outDir,'SegDiff.nii.gz');
