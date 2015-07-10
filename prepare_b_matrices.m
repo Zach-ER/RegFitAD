@@ -1,8 +1,8 @@
-function [bMatName,bMat,bMask] = prepare_b_matrices(dataDir,DTDir,bMask,bvals,bvecs)
+function [bMat,bMask] = prepare_b_matrices(V1Name,bMask,bvals,bvecs)
 %function PREPARE_B_MATRICES will go through the data after it has been
 %fitted using FSL. It will make and save the appropriately-rotated
 %b-matrices, so that 
-princDir = load_untouch_nii(fullfile(DTDir,'DT_V1.nii.gz')); 
+princDir = load_untouch_nii(V1Name); 
 princDir = princDir.img;
 
 if size(bvecs,2) ~= 3
@@ -39,10 +39,6 @@ for ix = 1:size(bMask,1)
 end
 end
 end
-
-bMatName = fullfile(dataDir,'bMat.mat');
-% save(bMatName,'bMat');
-
 end
 
 function rotMat = calc_rot_mat(voxDir,chosenDir)
