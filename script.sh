@@ -1,4 +1,4 @@
-if [ -f $4 ]; 
+if [ -f $4 ];
 then 
 	rm $4 tmp.nii.gz tmp_res.nii.gz
 fi
