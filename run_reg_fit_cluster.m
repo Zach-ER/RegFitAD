@@ -9,11 +9,17 @@ addpath('/home/zeatonro/MultiProd');
 
 %where results go 
 outDir = ['/home/zeatonro/RegFitAD/CortResults/Res',subjID];
-outName = fullfile(outDir,'results.txt');
 %where the original dataset is 
 dataDir = '/scratch2/mmodat/ivor/nico/data/drc/Phil/cortical_diffusion/';
-DTDir = fullfile(outDir,'DT');
 
+%if I'm testing it locally
+macPath = ['/Users/zer/RegFitAD/data/',subjID];
+if exist(macPath,'dir')
+   outDir =  macPath; dataDir = macPath;
+end
+
+outName = fullfile(outDir,'results.txt');
+DTDir = fullfile(outDir,'DT');
 %name boilerplate
 DWname = fullfile(dataDir,[subjID,'_corrected_dwi.nii.gz']);
 
@@ -46,7 +52,7 @@ bMask = load_untouch_nii(maskName); bMask= bMask.img > 0.1;
 
 %going to exclude voxels where the b = 0 are not the highest values
 
-DW2 = DW./repmat(S0,[1 1 1 size(DW,4)]);
+DW2 = repmat(bMask,[1 1 1 size(DW,4)]).*DW./repmat(S0,[1 1 1 size(DW,4)]);
 normedDW = DW2(:,:,:,bvals==1000);
 badDWInds = sum(normedDW > 1.5,4) > 0;
 bMask(badDWInds) = 0; 
@@ -62,6 +68,7 @@ S0 = S0(bMask);
 %%
 k = size(W,2);
 initParams = repmat([1.7e-3, 1.2e-3,1.1e-3],[k 1]);
+% initParams(1,:) = 3e-3; 
 
 %%
 %note: the Rician noise is added after the scaling by S0, so it is still
@@ -72,6 +79,7 @@ paramVals = direct_fit_DT_AD(S0,DW,W,bMat,initParams,riceNoise,SSDind);
 
 %%
 MD = mean(paramVals,2); 
+tmp = (paramVals - repmat(MD,[1,3])).^2;
 FA = sqrt(1.5) .* sqrt( sum(tmp,2))./sqrt(sum(paramVals.^2,2));
 
 paramVals(:,4) = MD; paramVals(:,5) = FA; 

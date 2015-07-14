@@ -18,19 +18,17 @@ options = optimoptions(@lsqnonlin,...
     'display','iter-detailed',...
     'tolfun',1e-6',...
     'tolx',1e-6,...
-    'diffMinChange',1e-4,...
-    'MaxFunEvals',5000);
+    'MaxFunEvals',1000);
+%'/Users/zer/RegFitAD/data/1525'
 end
 
 lb = 1e-6.*ones(size(initParams));
 ub = 4e-3 * ones(size(initParams));
 
 if SSDind
-    [paramVals,~] = fmincon(f,initParams,[],[],[],[],lb,...
-    ub,[],options);
+    [paramVals,~] = fmincon(f,initParams,[],[],[],[],lb,ub,[],options);
 else
-    [paramVals,~] = lsqnonlin(f,initParams,lb,...
-    ub,options);
+    [paramVals,~] = lsqnonlin(f,initParams,lb,ub,options);
 end
 
 end
