@@ -20,7 +20,7 @@ for line in open(subjectList):
     #os.makedirs(newDir)
     subjIds.append(subjId)
     
-for ID in subjIds[:1]:
+for ID in subjIds[13:]:
     resDir = os.path.join(outDir,'Res'+ID)
     
     affFile = os.path.join(subjDir,ID + '_B0_to_T1.txt')
@@ -43,9 +43,11 @@ for ID in subjIds[:1]:
     all_lines.append(' '.join(['sh script.sh ',freeSurfer,dwiFile,affFile,FSout])+ '\n')
     all_lines.append(' '.join(['sh script.sh ',parcelName,dwiFile,affFile,parcelOut])+ '\n')
 
-    fh = open('tmpResampling.sh','w')
+    scripName = 'regScripts/scrip' + ID + '.sh'
+    fh = open(scripName,'w')
     for line in all_lines:
         fh.write(line)
-    f.close()
-    os.system('qsub tmpResampling.sh')
+    fh.close()
+    
+    os.system('qsub -l h_rt=1:00:00 -l tmem=4G -l h_vmem=4G -l vf=4G -j y -S /bin/sh -b y -cwd -V -N ' + 'subj'+ ID + ' sh ' + scripName)
 
