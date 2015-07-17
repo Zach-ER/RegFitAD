@@ -4,6 +4,8 @@ function  paramVals  = direct_fit_DT_AD(S0,DW,W,bMat,initParams,sig,SSDind)
 %b-vectors rotated so that the same principal eigenvalues can describe each
 %voxel in the region. 
 
+  disp('We are starting the fit');
+
 f = @(x)obj_func_direct_fit(x,S0,DW,W,bMat,sig,SSDind);
 
 if SSDind
@@ -15,10 +17,10 @@ options = optimoptions(@fmincon,...
     'MaxFunEvals',1000);
 else
 options = optimoptions(@lsqnonlin,...
-    'display','none',...
+    'display','iter-detailed',...
     'tolfun',1e-6',...
     'tolx',1e-6,...
-    'MaxFunEvals',50000);
+    'MaxFunEvals',20000);
 %'/Users/zer/RegFitAD/data/1525'
 end
 
