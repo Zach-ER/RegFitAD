@@ -39,7 +39,7 @@ cortDistThresh = 1.5;
 %getting the labels right. 
 labelSum = sum(Labs.img(:,:,:,2:end),4);
 closeToCort = bwdist(labelSum>.1) < cortDistThresh;
-Segs.img = cat(4,Segs.img(:,:,:,[1,3]).*repmat(closeToCort,[1 1 1 2]),Labs.img(:,:,:,2:end));
+Segs.img = cat(4,Segs.img(:,:,:,[2,4]).*repmat(closeToCort,[1 1 1 2]),Labs.img(:,:,:,2:end));
 
 Segs = normalise_segs(Segs); Segs = Segs.img;
 DW = load_untouch_nii(DWname); DW = DW.img; 

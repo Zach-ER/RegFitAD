@@ -4,8 +4,6 @@ function  paramVals  = direct_fit_DT_AD(S0,DW,W,bMat,initParams,sig,SSDind)
 %b-vectors rotated so that the same principal eigenvalues can describe each
 %voxel in the region. 
 
-  disp('We are starting the fit');
-
 f = @(x)obj_func_direct_fit(x,S0,DW,W,bMat,sig,SSDind);
 
 if SSDind
