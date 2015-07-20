@@ -23,7 +23,8 @@ for line in open(subjectList):
     resDir = os.path.join(outDir,'Res'+ID)
     
     DTdir = os.path.join(resDir,'DT')
-    os.makedirs(DTdir)
+    if not os.path.isdir(DTdir):
+        os.makedirs(DTdir)
     
     BMname = os.path.join(resDir,'BMdiff.nii.gz')
     #name the binary mask file 
@@ -43,6 +44,8 @@ for line in open(subjectList):
     
     outPrefix = os.path.join(DTdir,'DT');
     instruc3 = dtifit(dwiFile,BMout,bvalTxt,bvecTxt,outPrefix)
-    os.system(instruc1)
-    os.system(instruc2)
-    os.system(instruc3)
+
+    if not os.path.isfile(outPrefix+'_FA.nii.gz'):
+        os.system(instruc1)
+        os.system(instruc2)
+        os.system(instruc3)

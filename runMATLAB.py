@@ -16,7 +16,7 @@ for iName, line in enumerate(open(subjectList)):
     instrucs = []
     instrucs.append("#!/bin/bash -l")
     instrucs.append("#$ -S /bin/bash")
-    instrucs.append("#$ -l h_rt=24:00:00")
+    instrucs.append("#$ -l h_rt=10:00:00")
     instrucs.append("#$ -l h_vmem=9.0G,tmem=8.0G")
     instrucs.append("#$ -N Subj" + ID )
     instrucs.append("#$ -j y")

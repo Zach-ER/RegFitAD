@@ -26,6 +26,7 @@ for ID in subjIds[13:]:
     affFile = os.path.join(subjDir,ID + '_B0_to_T1.txt')
     freeSurfer = os.path.join(subjDir,ID + '_labels.nii.gz')
     dwiFile = os.path.join(subjDir,ID + '_corrected_dwi.nii.gz')
+    FAFile = os.path.join(resDir,'DT','DT_FA.nii.gz')
     
     GIFdir = os.path.join(jorgeDir,ID+'_T1')
     BMname = os.path.join(GIFdir,ID+'_T1_NeuroMorph_Brain.nii.gz')
@@ -39,15 +40,16 @@ for ID in subjIds[13:]:
     
     all_lines = []
     all_lines.append(reg_resample_psf(dwiFile,BMname,affFile,BMout) + '\n')
-    all_lines.append(reg_resample_psf(dwiFile,segName,affFile,segOut)+ '\n')
-    all_lines.append(' '.join(['sh script.sh ',freeSurfer,dwiFile,affFile,FSout])+ '\n')
-    all_lines.append(' '.join(['sh script.sh ',parcelName,dwiFile,affFile,parcelOut])+ '\n')
+    all_lines.append(reg_resample_psf(dwiFile,segName,affFile,segOut)+ '\n')    
+    all_lines.append(' '.join(['cd',resDir,'\n']))
+    all_lines.append(' '.join(['sh /home/zeatonro/RegFitAD/code/script.sh ',freeSurfer,FAFile,affFile,FSout]) + '\n')
 
     scripName = 'regScripts/scrip' + ID + '.sh'
     fh = open(scripName,'w')
     for line in all_lines:
         fh.write(line)
     fh.close()
-    
-    os.system('qsub -l h_rt=1:00:00 -l tmem=4G -l h_vmem=4G -l vf=4G -j y -S /bin/sh -b y -cwd -V -N ' + 'subj'+ ID + ' sh ' + scripName)
+
+    if not os.path.isfile(FSout):
+        os.system('qsub -l h_rt=1:00:00 -l tmem=4G -l h_vmem=4G -l vf=4G -j y -S /bin/sh -b y -cwd -V -N ' + 'subj'+ ID + ' sh ' + scripName)
 
