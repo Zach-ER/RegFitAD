@@ -2,7 +2,9 @@ if [ -f $4 ];
 then
 	rm $4 tmp.nii.gz tmp_res.nii.gz
 fi
-for i in `seq 0 100`;
+if [ -f $2 ];
+then
+for i in `seq 0 80`;
 do
 	seg_maths $1 -add 1 -equal $(($i+1)) -bin tmp.nii.gz
 	if [ `seg_stats tmp.nii.gz -v` != "0" ];
@@ -19,5 +21,7 @@ do
 		echo Skipping label $i
 		#seg_maths $2 -mul 0 tmp_res.nii.gz
 	fi
+
 done
+fi
 rm tmp.nii.gz tmp_res.nii.gz
