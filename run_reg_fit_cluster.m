@@ -23,6 +23,8 @@ DTDir = fullfile(outDir,'DT');
 %name boilerplate
 DWname = fullfile(dataDir,[subjID,'_corrected_dwi.nii.gz']);
 
+
+
 FreeSurfName = fullfile(outDir,'LabsDiff.nii.gz');
 segName = fullfile(outDir,'SegDiff.nii.gz');
 maskName = fullfile(outDir,'BMdiff.nii.gz');
@@ -68,12 +70,11 @@ S0 = S0(bMask);
 %%
 k = size(W,2);
 initParams = repmat([1.7e-3, 1.2e-3,1.1e-3],[k 1]);
-% initParams(1,:) = 3e-3; 
 
 %%
 %note: the Rician noise is added after the scaling by S0, so it is still
 %correct and is not a percentage of the signal at a voxel. 
-riceNoise = 0; SSDind = 0;  
+riceNoise = sqrt(2); SSDind = 0;  
 
 paramVals = direct_fit_DT_AD(S0,DW,W,bMat,initParams,riceNoise,SSDind);
 
