@@ -17,6 +17,11 @@ macPath = ['/Users/zer/RegFitAD/data/',subjID];
 if exist(macPath,'dir')
    outDir =  macPath; dataDir = macPath;
 end
+crlPath = ['/home/ch179220/RegFitAD/data/',subjID];
+if exist(crlPath,'dir')
+   outDir =  crlPath; dataDir = crlPath;
+end
+
 
 outName = fullfile(outDir,'results.txt');
 DTDir = fullfile(outDir,'DT');
@@ -30,6 +35,7 @@ segName = fullfile(outDir,'SegDiff.nii.gz');
 maskName = fullfile(outDir,'BMdiff.nii.gz');
 SnoughtName = fullfile(DTDir,'DT_S0.nii.gz');
 V1Name = fullfile(DTDir,'DT_V1.nii.gz');
+V2Name = fullfile(DTDir,'DT_V2.nii.gz');
 
 %loading 
 Segs = load_untouch_nii(segName);
@@ -60,16 +66,29 @@ badDWInds = sum(normedDW > 1.5,4) > 0;
 bMask(badDWInds) = 0; 
 
 %% 
-[bMat,bMask] = prepare_b_matrices(V1Name,bMask,bvals,bvecs);
+[bMat,bMask] = prepare_b_matrices(V1Name,V2Name,bMask,bvals,bvecs);
 
 %%
 W = flattener_4d(Segs,bMask);
 DW = flattener_4d(DW,bMask);
 S0 = S0(bMask);
 
+
 %%
 k = size(W,2);
 initParams = repmat([1.7e-3, 1.2e-3,1.1e-3],[k 1]);
+
+%% to check if the signal is working 
+% initParams = repmat([1.7e-3, 1.1e-3,.1e-3],[k 1]);
+% voxParams = W * initParams;
+% outSigs = DT_diag_forward( bMat,voxParams);
+% SigOut = load_untouch_nii(DWname);
+% for ii = 1:size(SigOut.img,4)  
+%     tmpImg = 0.*bMask; tmpImg(bMask) = outSigs(:,ii);
+%     SigOut.img(:,:,:,ii) = tmpImg;   
+% end
+% outName = fullfile(outDir,'sigCheck.nii.gz');
+% save_untouch_nii(SigOut,outName);
 
 %%
 %note: the Rician noise is added after the scaling by S0, so it is still
