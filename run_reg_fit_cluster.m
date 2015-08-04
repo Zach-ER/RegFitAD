@@ -23,7 +23,7 @@ if exist(crlPath,'dir')
 end
 
 
-outName = fullfile(outDir,'results.txt');
+outName = fullfile(outDir,'results3007.txt');
 DTDir = fullfile(outDir,'DT');
 %name boilerplate
 DWname = fullfile(dataDir,[subjID,'_corrected_dwi.nii.gz']);
