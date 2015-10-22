@@ -6,7 +6,7 @@ function  paramVals  = direct_fit_DT_AD(S0,DW,W,bMat,initParams,sig,SSDind)
 
 f = @(x)obj_func_direct_fit(x,S0,DW,W,bMat,sig,SSDind);
 
-if SSDind
+if (SSDind && SSDind ~= 's')
 options = optimoptions(@fmincon,...
     'display','iter-detailed',...
     'tolfun',1e-6',...
@@ -25,7 +25,7 @@ end
 lb = 1e-6.*ones(size(initParams));
 ub = 4e-3 * ones(size(initParams));
 
-if SSDind
+if (SSDind && SSDind ~= 's')
     [paramVals,~] = fmincon(f,initParams,[],[],[],[],lb,ub,[],options);
 else
     [paramVals,~] = lsqnonlin(f,initParams,lb,ub,options);
@@ -38,7 +38,7 @@ end
 
 
 function differences = obj_func_direct_fit(paramVals,S0,DW,W,bMat,sig,SSDind)
-
+%s for small
 %paramMat = vals_to_mat(paramVals);
 
 voxParams = W * paramVals;
@@ -46,7 +46,9 @@ sigGuess = repmat(S0,[1 size(DW,2)]).*DT_diag_forward( bMat,voxParams);
 differences = double(DW - sqrt(sigGuess.^2 + sig.^2));
 
 
-if SSDind
+if SSDind == 's';
+   differences = differences;        
+elseif  SSDind
     differences = sum(differences(:).^2);
 else
     differences = sqrt(sum(differences.^2,2));    

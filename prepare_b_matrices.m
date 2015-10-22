@@ -25,6 +25,7 @@ for ix = 1:size(bMask,1)
         rotMat = calc_rot_mat(voxDir,defaultDirec);
         if sum(isnan(rotMat(:))) > 0
             bMask(ix,iy,iz) = 0;
+            bMat(ctr,:,:) = [];
         continue
         end
         %rotating the vector matrix

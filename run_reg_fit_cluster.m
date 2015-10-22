@@ -60,7 +60,7 @@ badDWInds = sum(normedDW > 1.5,4) > 0;
 bMask(badDWInds) = 0; 
 
 %% 
-[bMat,bMask] = prepare_b_matrices(V1Name,bMask,bvals,bvecs);
+[bMat,bMask2] = prepare_b_matrices(V1Name,bMask,bvals,bvecs);
 
 %%
 W = flattener_4d(Segs,bMask);
