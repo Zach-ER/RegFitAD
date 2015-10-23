@@ -20,7 +20,7 @@ for line in open(subjectList):
     #os.makedirs(newDir)
     subjIds.append(subjId)
     
-for ID in subjIds[13:]:
+for iSubj, ID in enumerate(subjIds):
     resDir = os.path.join(outDir,'Res'+ID)
     
     affFile = os.path.join(subjDir,ID + '_B0_to_T1.txt')
@@ -50,6 +50,6 @@ for ID in subjIds[13:]:
         fh.write(line)
     fh.close()
 
-    if not os.path.isfile(FSout):
-        os.system('qsub -l h_rt=1:00:00 -l tmem=4G -l h_vmem=4G -l vf=4G -j y -S /bin/sh -b y -cwd -V -N ' + 'subj'+ ID + ' sh ' + scripName)
+    #if not os.path.isfile(FSout):
+    os.system('qsub -l h_rt=1:00:00 -l tmem=4G -l h_vmem=4G -l vf=4G -j y -S /bin/sh -b y -cwd -V -N ' + 'subj'+ ID + ' sh ' + scripName)
 
