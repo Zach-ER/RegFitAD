@@ -1,4 +1,4 @@
-function  paramVals  = direct_fit_DT_AD(S0,DW,W,bMat,initParams,sig,SSDind)
+function  [paramVals,sigGuess]  = direct_fit_regseg(S0,DW,W,bMat,initParams,sig,SSDind)
 %DIRECT_FIT_DT This fits the DT model in the region-wise manner. It does
 %this by pre-computing a rotation matrix for each voxel, that has the
 %b-vectors rotated so that the same principal eigenvalues can describe each
@@ -18,7 +18,7 @@ options = optimoptions(@lsqnonlin,...
     'display','iter-detailed',...
     'tolfun',1e-6',...
     'tolx',1e-6,...
-    'MaxFunEvals',3000);
+    'MaxFunEvals',1000);
 %'/Users/zer/RegFitAD/data/1525'
 end
 
@@ -30,6 +30,8 @@ if (SSDind && SSDind ~= 's')
 else
     [paramVals,~] = lsqnonlin(f,initParams,lb,ub,options);
 end
+
+sigGuess = repmat(S0,[1 size(DW,2)]).*DT_diag_forward( bMat,W*paramVals);
 
 end
 
