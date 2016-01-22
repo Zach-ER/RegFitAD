@@ -49,7 +49,7 @@ differences = double(DW - sqrt(sigGuess.^2 + sig.^2));
 
 
 if SSDind == 's';
-   differences = differences;        
+    differences = differences;        
 elseif  SSDind
     differences = sum(differences(:).^2);
 else
