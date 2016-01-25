@@ -8,11 +8,15 @@ topDir = '/Users/zer/RegFitAD/data/Ep/Testing_RegSeg'
 RAWdir = os.path.join(topDir,'Raw')
 refIm = os.path.join(RAWdir,'DW.nii.gz')
 rMask = os.path.join(RAWdir,'Brain_mask.nii.gz')
+#dirBase = 'it_0'
+dirBase = 'it_initcpp'
 
-for i in range(10):
+for i in range(50):
 	print i
-	itDir = os.path.join(topDir,'it_0'+str(i))
-	nextDir = os.path.join(topDir,'it_0'+str(i+1))
+	itDir = os.path.join(topDir,dirBase +str(i))
+	nextDir = os.path.join(topDir,dirBase +str(i+1))
+	prevDir = os.path.join(topDir,dirBase +str(i-1))
+
 	if os.path.isdir(itDir) and not os.path.isdir(nextDir):
 		os.mkdir(nextDir)
 
@@ -21,8 +25,14 @@ for i in range(10):
 	cppName = os.path.join(itDir,'trans.cpp.nii')
 	segResName = os.path.join(nextDir,'Segs_Diffspace.nii.gz')
 
+	oldCpp = os.path.join(prevDir,'trans.cpp.nii')
+
 	if not os.path.isfile(resIm) and os.path.isfile(floIm):
-		DPD.NR_reg(refIm,floIm,cppName,resIm,rMask,dbg=False)
+		if os.path.isfile(oldCpp):
+			other_args = ' -incpp '+oldCpp + ' -rmask ' + rMask
+		else:
+			other_args = '-rmask ' + rMask
+		DPD.NR_reg(refIm,floIm,cppName,resIm,dbg=False,other_args =other_args)
 
 	segName = os.path.join(itDir,'Segs_Diffspace.nii.gz')
 	if not os.path.isfile(segResName) and os.path.isfile(cppName):

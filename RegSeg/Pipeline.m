@@ -1,12 +1,12 @@
-function Pipeline(itNum)
+function Pipeline()
 %PIPELINE Summary of this function goes here
 %   Detailed explanation goes here
 
 subjDir = '/Users/zer/RegFitAD/data/Ep/Testing_RegSeg';
-%run_reg_fit_wholebrain(subjDir,0);
+baseName = 'it_0';
 
-for i = 2:10
-run_reg_fit_wholebrain(subjDir,i);
+for i = 0:50
+run_reg_fit_wholebrain(subjDir,i,baseName);
 bash_profile = 'source ~/.bash_profile; ';
 pyCMD = 'python /Users/zer/RegFitAD/code/RegSeg/Register_Resample_Segs.py';
 system([bash_profile,pyCMD]);
@@ -18,10 +18,10 @@ end
 
 
 
-function run_reg_fit_wholebrain( subjDir ,itNum)
+function run_reg_fit_wholebrain( subjDir ,itNum,baseName)
 %This runs the regional fit on the whole-brain, trimming none of it.
 
-itDir = fullfile(subjDir,['it_0',num2str(itNum)]);
+itDir = fullfile(subjDir,[baseName,num2str(itNum)]);
 RAWdir = fullfile(subjDir,'Raw'); 
 
 %adding paths:
