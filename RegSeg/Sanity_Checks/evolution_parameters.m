@@ -4,7 +4,6 @@ function evolution_parameters
 
 testFold = '/Users/zer/RegFitAD/data/Ep/Testing_RegSeg';
 foldBase = 'it_0';
-foldBase = 'it_initcpp';
 
 rawFold = fullfile(testFold,'Raw');
 bMask = load_untouch_nii(fullfile(rawFold,'Brain_Mask.nii.gz'));
