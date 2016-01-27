@@ -37,7 +37,7 @@ for i in range(50):
 
 	segName = os.path.join(itDir,'Segs_Diffspace.nii.gz')
 	if not os.path.isfile(segResName) and os.path.isfile(cppName):
-		DPD.reg_resample(segName,segName,segResName,cpp = cppName,dbg = False,other_args = '-psf')
+		DPD.reg_resample(segName,segName,segResName,cpp = cppName,dbg = False,other_args = '-inter 4')
 
 	oldName = os.path.join(itDir,'reg_results.txt')
 	newName = os.path.join(nextDir,'init_params.txt')
