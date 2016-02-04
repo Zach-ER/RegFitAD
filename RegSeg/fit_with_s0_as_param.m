@@ -1,7 +1,10 @@
+%the base directory only needs the segmentations in diffusion space that
+%they're going to be working on. 
+
 function fit_with_s0_as_param()
 
 subjDir = '/Users/zer/RegFitAD/data/Ep/TestT1';
-baseName = 'it_0';
+baseName = 'WholeROI_';
 T1Dir = '/Users/zer/RegFitAD/data/Ep/T1'; 
 
 for i = 1:20

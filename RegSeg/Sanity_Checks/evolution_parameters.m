@@ -2,8 +2,8 @@ function evolution_parameters
 
 %This script will look at DT data that we've analysed from the folder -
 
-testFold = '/Users/zer/RegFitAD/data/Ep/TestS0';%ing_RegSeg';
-foldBase = 'it_0';
+testFold = '/Users/zer/RegFitAD/data/Ep/TestT1';%S0';%ing_RegSeg';
+foldBase = 'WholeROI_';%'it_0';
 
 rawFold = fullfile(testFold,'Raw');
 bMask = load_untouch_nii(fullfile(rawFold,'Brain_Mask.nii.gz'));
@@ -12,13 +12,13 @@ rawDatName = fullfile(rawFold,'DW_reduced.nii.gz');
 rawDat = load_untouch_nii(rawDatName); rawDat = rawDat.img;
 
 S0Name = fullfile(rawFold,'DT','DT_S0.nii.gz');
-S0 = load_untouch_nii(S0Name); S0 = S0.img;
+%S0 = load_untouch_nii(S0Name); S0 = S0.img;
 
 MDs = zeros(51,5);
 FAs = MDs;
 SSDs = zeros(51,1); SSDS0s = SSDs;
 synthScaleFac = 1e6; 
-for i = 0:20
+for i = 1:10
     
     foldName = fullfile(testFold,[foldBase,num2str(i)]);
     resultsName = fullfile(foldName,'reg_results.txt');
@@ -39,9 +39,14 @@ for i = 0:20
      synthIm = load_untouch_nii(synthImName); synthIm= synthIm.img * synthScaleFac;
      SSDs(i+1) = calc_ssd(rawDat,synthIm,bMask);
 %     
-     SSDS0s(i+1) = calc_ssd_S0(rawDat,synthIm,bMask,S0);
+%     SSDS0s(i+1) = calc_ssd_S0(rawDat,synthIm,bMask,S0);
 %     
 end
+figure(2);
+subplot(2,1,1);
+plot(FAs(1:10,:));
+plot(MDs(1:10,:)); 
+
 tmp = 0;
 
 end

@@ -10,7 +10,7 @@ T1Dir = '/Users/zer/RegFitAD/data/Ep/T1'
 RAWdir = os.path.join(topDir,'Raw')
 refIm = os.path.join(RAWdir,'DT_MD.nii.gz')
 rMask = os.path.join(RAWdir,'Brain_mask.nii.gz')
-dirBase = 'it_0'
+dirBase = 'WholeROI_'
 
 for i in range(50):
 	#NAMING 
