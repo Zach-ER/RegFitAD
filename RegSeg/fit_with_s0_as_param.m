@@ -4,10 +4,10 @@
 function fit_with_s0_as_param()
 
 subjDir = '/Users/zer/RegFitAD/data/Ep/TestT1';
-baseName = 'WholeROI_';
+baseName = 'prop_0';
 T1Dir = '/Users/zer/RegFitAD/data/Ep/T1'; 
 
-for i = 1:20
+for i = 0:10
 run_reg_fit_wholebrain(subjDir,i,baseName,T1Dir);
 bash_profile = 'source ~/.bash_profile; ';
 %pyCMD = 'python /Users/zer/RegFitAD/code/RegSeg/Register_Resample_Segs.py';
@@ -51,11 +51,11 @@ W = flat_segs(segName,bMask);
 [bMat,bMask] = prepare_b_matrices(V1Name,V2Name,bMask,bvals,bvecs);
 
 %% T1 stuff 
-T1MaskName = fullfile(T1Dir,'Brain_mask.nii.gz'); T1Mask = load_untouch_nii(T1MaskName);
+T1MaskName = fullfile(itDir,'T1_Brain_mask.nii.gz'); T1Mask = load_untouch_nii(T1MaskName);
 T1Mask = T1Mask.img>.5; 
 T1Name = fullfile(T1Dir,'T1.nii.gz');
 
-T1SegName = fullfile(T1Dir,'Segmentation.nii.gz'); 
+T1SegName = fullfile(itDir,'T1_Segmentation.nii.gz'); 
 W_T1 = flat_segs(T1SegName,T1Mask);
 
 
@@ -75,9 +75,8 @@ end
 %%
 %note: the Rician noise is added after the scaling by S0, so it is still
 %correct and is not a percentage of the signal at a voxel.
-riceNoise = 0;%sqrt(13./DWfac); 
+riceNoise = 0;% 3e-4;%sqrt(13./(DWfac*100)); %0;%
 SSDind = 's'; %1,0,'s'
-%note- this is a tad high, but there's excellent immunity to it.. .
 
 %% fitting the thing 
 

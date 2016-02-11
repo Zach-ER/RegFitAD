@@ -3,7 +3,7 @@ function evolution_parameters
 %This script will look at DT data that we've analysed from the folder -
 
 testFold = '/Users/zer/RegFitAD/data/Ep/TestT1';%S0';%ing_RegSeg';
-foldBase = 'WholeROI_';%'it_0';
+foldBase = 'prop_0';%'it_0';
 
 rawFold = fullfile(testFold,'Raw');
 bMask = load_untouch_nii(fullfile(rawFold,'Brain_Mask.nii.gz'));
@@ -44,8 +44,9 @@ for i = 1:10
 end
 figure(2);
 subplot(2,1,1);
-plot(FAs(1:10,:));
-plot(MDs(1:10,:)); 
+plot(FAs(2:10,:));
+subplot(2,1,2)
+plot(MDs(2:10,:)); 
 
 tmp = 0;
 
