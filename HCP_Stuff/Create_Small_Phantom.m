@@ -22,8 +22,8 @@ xbounds = [60,80];
 ybounds = [75,85]; 
 zbounds = [80,100]; 
 
-make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,experimentDir);
-% make_gold_stand_segs(xbounds,ybounds,zbounds,segs,experimentDir);
+%make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,experimentDir);
+make_gold_stand_segs(xbounds,ybounds,zbounds,segs,experimentDir);
 
 end
 
