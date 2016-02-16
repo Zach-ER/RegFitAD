@@ -2,21 +2,21 @@ function Resample_to_different()
 % This function will make 'blanks' to resample to, with worse/better
 % resolution
 
-dwGoldName = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/GoldStand/DW.nii.gz';
+dwGoldName = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/OneVoxROI/GoldStand/DW.nii.gz';
 gold = load_untouch_nii(dwGoldName); 
 
-scaleFacs=linspace(1,4,8); 
+scaleFacs=linspace(1,7,15); 
 
 for i = 1:length(scaleFacs)
    
-    newFold = fullfile('/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts',['downSampled_',num2str(i)]);
+    newFold = fullfile('/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/OneVoxROI',...
+        ['downSampled_',num2str(i)]);
     mkdir(newFold);
     blankName = fullfile(newFold,'Mask.nii.gz'); 
     
     newImg = gold; 
-    newImg.img = 0.*squeeze(gold.img(:,:,:,1));
+    newImg.img = zeros(size(gold.img,1),size(gold.img,2),size(gold.img,3));
     newImg.hdr.dime.pixdim(2:4) = gold.hdr.dime.pixdim(2:4).*scaleFacs(i);
-    
     
     blankImSize = ceil(size(newImg.img)./scaleFacs(i));
     newImg.img = ones(blankImSize);
