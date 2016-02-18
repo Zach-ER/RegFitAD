@@ -2,14 +2,14 @@ import os
 import shutil
 import Diff_Preprocess_Defs as DPD
 
-topDir = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/OneVoxROI'
+topDir = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/OneVoxCRB'
 gsDir = os.path.join(topDir,'GoldStand')
 
 bvalName = os.path.join(gsDir,'bvals')
 bvecName = os.path.join(gsDir,'bvecs')
 
 for i in range(1,16):
-	resampDir = os.path.join(topDir,'downSampled_'+str(i))
+	resampDir = os.path.join(gsDir,'downSampled_'+str(i))
 	refName = os.path.join(resampDir,'Mask.nii.gz')
 	outName = os.path.join(resampDir,'Segs_Resampled.nii.gz')
 	floName = os.path.join(gsDir,'Segs_Reduced.nii.gz')

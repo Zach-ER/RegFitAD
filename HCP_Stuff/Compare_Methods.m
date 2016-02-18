@@ -14,17 +14,17 @@ classical2 = get_classical_results(nResamples,.8,'DT_first12');
 
 figure(2); clf;
 subplot(1,2,1); 
-plot(methWithS0.FAs,'xr'); hold on; 
-plot(myMeth2.FAs,'xm'); hold on 
-plot(classical.FAs,'ko'); 
-plot(classical2.FAs,'bo'); 
+plot(methWithS0.FAs,'x-r'); hold on; 
+plot(myMeth2.FAs,'xm-'); hold on 
+plot(classical.FAs,'ko-'); 
+plot(classical2.FAs,'bo-'); 
 
 subplot(1,2,2); 
-plot(methWithS0.MDs,'xr'); 
+plot(methWithS0.MDs,'xr-'); 
 hold on; 
-plot(myMeth2.MDs,'xm'); 
-plot(classical.MDs,'ko'); 
-plot(classical2.MDs,'bo'); 
+plot(myMeth2.MDs,'xm-'); 
+plot(classical.MDs,'ko-'); 
+plot(classical2.MDs,'bo-'); 
 
 
 end

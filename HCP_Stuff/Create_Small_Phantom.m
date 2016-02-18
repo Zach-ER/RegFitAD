@@ -18,25 +18,31 @@ bvecs = load('/Users/zer/RegFitAD/data/HCPwStruct/122317/T1w/Diffusion/bvecs');
 
 segs = load_untouch_nii(SegsName); 
 
-xbounds = [60,80]; 
-ybounds = [75,85]; 
-zbounds = [80,100]; 
+%wm/gm
+xbounds = [60,80]; ybounds = [75,85]; zbounds = [80,100]; 
+%cerebellum
+xbounds = [75,75]; ybounds = [55,75]; zbounds = [31,41]; 
 
-%make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,experimentDir);
-make_gold_stand_segs(xbounds,ybounds,zbounds,segs,experimentDir);
+outDir = fullfile('/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts','OneVoxCRB'); 
+if ~exist(outDir,'dir')
+    mkdir(outDir);
+end
+
+make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,outDir);
+%make_gold_stand_segs(xbounds,ybounds,zbounds,segs,outDir);
 
 end
 
-function make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,experimentDir)
+function make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,outDir)
 DW = load_untouch_nii(DWname); 
 bval_indices = bvals < 1200; 
 bvals = bvals(bval_indices);
 bvecs = bvecs(:,bval_indices); 
 
 
-DWname = fullfile(experimentDir,'GoldStand','DW.nii.gz');
-bvalName= fullfile(experimentDir,'GoldStand','bvals');
-bvecName= fullfile(experimentDir,'GoldStand','bvecs');
+DWname = fullfile(outDir,'DW.nii.gz');
+bvalName= fullfile(outDir,'bvals');
+bvecName= fullfile(outDir,'bvecs');
 
 newDW.hdr = DW.hdr; 
 newDW.ext = DW.ext; 
@@ -54,11 +60,11 @@ save(bvecName,'bvecs','-ascii');
 end
 
 
-function make_gold_stand_segs(xbounds,ybounds,zbounds,segs,experimentDir)
+function make_gold_stand_segs(xbounds,ybounds,zbounds,segs,outDir)
 
 segImg = segs.img(xbounds(1):xbounds(2),ybounds(1):ybounds(2),...
     zbounds(1):zbounds(2),:); 
-segsOutName = fullfile(experimentDir,'GoldStand','Segs_Reduced.nii.gz');
+segsOutName = fullfile(outDir,'Segs_Reduced.nii.gz');
 segsOut = segs; 
 segsOut.img = segImg;
 segsOut.hdr.dime.dim(2:5) = size(segImg);
@@ -67,7 +73,7 @@ save_untouch_nii(segsOut,segsOutName);
 Mask = segsOut;
 Mask.img = sum(segsOut.img,4) > .5;
 Mask.hdr.dime.dim(2:4) = size(Mask.img);
-MaskName = fullfile(experimentDir,'GoldStand','mask.nii.gz');
+MaskName = fullfile(outDir,'Mask.nii.gz');
 save_untouch_nii(Mask,MaskName);
 
 MaskDWImg = zeros(size(segs.img,1),size(segs.img,2),size(segs.img,3));
@@ -77,7 +83,7 @@ MaskDW = segs;
 MaskDW.img = MaskDWImg;
 MaskDW.hdr.dime.dim(5) = 1; 
 MaskDW.hdr.dime.dim(1) = 3;  
-MaskDWName = fullfile(experimentDir,'GoldStand','DWmask.nii.gz');
+MaskDWName = fullfile(outDir,'DWmask.nii.gz');
 save_untouch_nii(MaskDW,MaskDWName);
 
 

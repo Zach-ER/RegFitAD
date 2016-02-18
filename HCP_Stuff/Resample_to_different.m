@@ -1,16 +1,16 @@
-function Resample_to_different()
+function Resample_to_different(topDirec)
 % This function will make 'blanks' to resample to, with worse/better
 % resolution
 
-dwGoldName = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/OneVoxROI/GoldStand/DW.nii.gz';
+%TOPdirec should contain 'GoldStand' at the end of the path 
+dwGoldName = fullfile(topDirec,'DW.nii.gz');
 gold = load_untouch_nii(dwGoldName); 
 
 scaleFacs=linspace(1,7,15); 
 
 for i = 1:length(scaleFacs)
    
-    newFold = fullfile('/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/OneVoxROI',...
-        ['downSampled_',num2str(i)]);
+    newFold = fullfile(topDirec,['downSampled_',num2str(i)]);
     mkdir(newFold);
     blankName = fullfile(newFold,'Mask.nii.gz'); 
     
