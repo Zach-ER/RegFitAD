@@ -1,5 +1,5 @@
 function Plot_Results(results,figNums,nBval)
-
+%nBval is the number of cycles of bvals we are including. 
 data{1} = results.FAs; 
 data{2} = results.MDs; 
 
@@ -22,6 +22,8 @@ for i = 1:40
     plot(data(:,2),'xk-'); 
     plot(data(:,3),'xg-'); 
     plot(data(:,4),'xm-'); 
+    plot(data(:,5),'xb-'); 
+    plot(data(:,6),'xy-'); 
     
 end
 

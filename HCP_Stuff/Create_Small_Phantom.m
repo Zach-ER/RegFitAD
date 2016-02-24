@@ -22,16 +22,58 @@ segs = load_untouch_nii(SegsName);
 xbounds = [60,80]; ybounds = [75,85]; zbounds = [80,100]; 
 %cerebellum
 xbounds = [75,75]; ybounds = [55,75]; zbounds = [31,41]; 
+%expName = 'OneVoxCRB'; 
+%
+expName = 'WholeFornix'; 
+xbounds = [59,83]; ybounds = [76,109]; zbounds= [49,68]; 
 
-outDir = fullfile('/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts','OneVoxCRB'); 
+expName = 'OneVoxFornix'; 
+xbounds = [69,69]; ybounds = [76,109]; zbounds= [49,68]; 
+
+
+outDir = fullfile(experimentDir,expName); 
 if ~exist(outDir,'dir')
     mkdir(outDir);
 end
 
 make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,outDir);
-%make_gold_stand_segs(xbounds,ybounds,zbounds,segs,outDir);
+make_gold_stand_segs(xbounds,ybounds,zbounds,segs,outDir);
+
+fornixName = fullfile(hcpTopDirec,'Diffusion_Fornix.nii.gz');
+segName = fullfile(outDir,'Segs_Reduced.nii.gz');
+fornix = crop_image(fornixName,xbounds,ybounds,zbounds); 
+outFornix = fullfile(outDir,'Segs_With_Fornix.nii.gz');
+
+combine_segs_label(fornix,segName,outFornix); 
 
 end
+
+function combine_segs_label(diffSeg,segName,outName)
+
+segs =   load_untouch_nii(segName);
+%how to scale the remaining tissue types 
+seg_scale = 1-diffSeg.img; 
+
+scaledSegs = segs;
+for i = 1:size(segs.img,4)
+    scaledSegs.img(:,:,:,i)= segs.img(:,:,:,i).*seg_scale;
+end
+
+scaledSegs.img(:,:,:,end+1) =diffSeg.img;
+scaledSegs.hdr.dime.dim(5) = size(scaledSegs.img,4); 
+save_untouch_nii(scaledSegs,outName);
+end
+
+function cropped = crop_image(imageName,xbounds,ybounds,zbounds)
+
+cropped = load_untouch_nii(imageName); 
+cropped.img = cropped.img(xbounds(1):xbounds(2),ybounds(1):ybounds(2),...
+    zbounds(1):zbounds(2),:);
+cropped.hdr.dime.dim(2:4) = [size(cropped.img,1),size(cropped.img,2),...
+    size(cropped.img,3)];
+
+end
+
 
 function make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,outDir)
 DW = load_untouch_nii(DWname); 

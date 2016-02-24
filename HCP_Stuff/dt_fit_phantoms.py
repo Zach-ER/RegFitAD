@@ -1,8 +1,13 @@
 import os 
 import shutil
 import Diff_Preprocess_Defs as DPD
+import sys 
+
 #This just does the DTI fitting for the phantoms. 
 #Then it deletes the unneeded files. 
+
+#INPUT - top level directory 
+
 
 def get_immediate_subdirectories(a_dir):
     return [name for name in os.listdir(a_dir)
@@ -16,8 +21,16 @@ def standard_dti_names(dwDIR):
 	bvecName = os.path.join(dwDIR,'bvecs')
 	return DWname,MaskName,bvalName,bvecName
 
-topDir = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/OneVoxCRB'
+def get_direc_name(sysArgs):
+	if len(sysArgs) < 2:
+	print 'Please include the top directory. Exiting'
+		exit()
+	else:
+		return sysArgs[1]
 
+
+topDir = get_direc_name(sys.argv)
+	
 for dirName in get_immediate_subdirectories(topDir):
 	if 'Readings' in dirName:
 		readDir = os.path.join(topDir,dirName)

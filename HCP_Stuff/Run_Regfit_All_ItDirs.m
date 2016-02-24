@@ -4,7 +4,7 @@ lengthCycle  = 6;
 nIter = 40;
 
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
-for nCycles = 1:5
+for nCycles = 2:5
     nReadings = lengthCycle*nCycles;
     dataDirName = fullfile(topDir,[num2str(nReadings),'_Readings']);
     for downSamplingNumber = 1:15

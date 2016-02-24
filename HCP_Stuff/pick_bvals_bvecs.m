@@ -10,10 +10,10 @@ goldStandDir = fullfile(topDir,'GoldStand');
 bvals = load(fullfile(goldStandDir,'bvals'));
 bvecs = load(fullfile(goldStandDir,'bvecs'));
 
-segInds = [1:3,5]; 
+segInds = [1:6]; 
 
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
-for nCycles = 1:5
+for nCycles = 2:5
     nReadings = lengthCycle*nCycles;
     dataDirName = fullfile(topDir,[num2str(nReadings),'_Readings']);
     if ~exist(dataDirName,'dir')
@@ -39,14 +39,14 @@ for nCycles = 1:5
                 mkdir(itDir)
             end
             
-           % save_comb_of_bvals(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,itDir);
+           save_comb_of_bvals(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,itDir);
             
             %copy over the files for segmentations 
-           % system(['cp ',GS_SegName,' ',itDir]);
-           % system(['cp',GS_MaskName,' ',itDir]);
+            system(['cp ',GS_SegName,' ',itDir]);
+            system(['cp ',GS_MaskName,' ',itDir]);
 
             
-            run_reg_fit_itDir(itDir,segInds); 
+         %   run_reg_fit_itDir(itDir,segInds); 
             
         end
     end

@@ -11,7 +11,7 @@ myMeth.MDs = zeros(15,nSegs,40,5);
 classicalMeth = myMeth; 
 
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
-for nCycles = 1:5
+for nCycles = 2:5
     nReadings = lengthCycle*nCycles;
     dataDirName = fullfile(topDir,[num2str(nReadings),'_Readings']);
     for downSamplingNumber = 1:15
@@ -20,14 +20,15 @@ for nCycles = 1:5
             subjDir = fullfile(downSampledNewDir,['It_',num2str(iIteration)]);
             
             %
-            [FA,MD] = get_my_meth(subjDir);
+%            [FA,MD] = get_my_meth(subjDir);
+%             
+%             myMeth.FAs(downSamplingNumber,:,iIteration,nCycles) = FA(:);
+%             myMeth.MDs(downSamplingNumber,:,iIteration,nCycles) = MD(:);
             
-            myMeth.FAs(downSamplingNumber,:,iIteration,nCycles) = FA(:);
-            myMeth.MDs(downSamplingNumber,:,iIteration,nCycles) = MD(:);
-            
-%            [FA,MD] = get_classical(subjDir,thresh);
- %           classicalMeth.FAs(downSamplingNumber,:,iIteration,nCycles) = FA(:);
-  %          classicalMeth.MDs(downSamplingNumber,:,iIteration,nCycles) = MD(:);
+            segDims = 1:6; %[1:3,5]; 
+            [FA,MD] = get_classical(subjDir,thresh,segDims);
+            classicalMeth.FAs(downSamplingNumber,:,iIteration,nCycles) = FA(:);
+            classicalMeth.MDs(downSamplingNumber,:,iIteration,nCycles) = MD(:);
         end
     end
 end
@@ -45,7 +46,7 @@ MD = DTvals(:,1);
 end
 
 %% this gets the results from the classical method,
-function  [FA,MD] = get_classical(subjDir,thresh)
+function  [FA,MD] = get_classical(subjDir,thresh,segDims)
 dtFold = fullfile(subjDir,'DT'); 
 segName = fullfile(subjDir,'Segs_Resampled.nii.gz');
 FAname = fullfile(dtFold,'DT_FA.nii.gz');
@@ -55,9 +56,9 @@ seg = load_untouch_nii(segName); seg = seg.img;
 FAimg = load_untouch_nii(FAname); FAimg = FAimg.img;
 MDimg = load_untouch_nii(MDname); MDimg = MDimg.img;
 
-for iSegNo = 1:3
+for iSegNo = 1:length(segDims)
     
-    tissue = seg(:,:,:,iSegNo) > thresh;
+    tissue = seg(:,:,:,segDims(iSegNo)) > thresh;
     %tissueCount = sum(tissue(:));
     %fprintf('Here we have %d of tissue %i\n',tissueCount,iSegNo);
     FA(iSegNo) = mean(FAimg(tissue));
