@@ -10,6 +10,9 @@ myMeth.MDs = zeros(15,nSegs,40,5);
 
 classicalMeth = myMeth; 
 
+dtName = 'DTvals.txt';
+diffName = 'Diffs.txt';
+
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
 for nCycles = 2:5
     nReadings = lengthCycle*nCycles;
@@ -20,10 +23,10 @@ for nCycles = 2:5
             subjDir = fullfile(downSampledNewDir,['It_',num2str(iIteration)]);
             
             %
-%            [FA,MD] = get_my_meth(subjDir);
-%             
-%             myMeth.FAs(downSamplingNumber,:,iIteration,nCycles) = FA(:);
-%             myMeth.MDs(downSamplingNumber,:,iIteration,nCycles) = MD(:);
+            [FA,MD] = get_my_meth(subjDir,diffName,dtName);
+            
+            myMeth.FAs(downSamplingNumber,:,iIteration,nCycles) = FA(:);
+            myMeth.MDs(downSamplingNumber,:,iIteration,nCycles) = MD(:);
             
             segDims = 1:6; %[1:3,5]; 
             [FA,MD] = get_classical(subjDir,thresh,segDims);
@@ -35,10 +38,10 @@ end
 end
 
 %% This collects my results from the directories
-function [FA,MD] = get_my_meth(subjDir)
+function [FA,MD] = get_my_meth(subjDir,diffName,dtName)
 
-outName = fullfile(subjDir,'Diffs.txt');
-DTparamsName = fullfile(subjDir,'DTvals.txt');
+outName = fullfile(subjDir,diffName);
+DTparamsName = fullfile(subjDir,dtName);
 DTvals = load(DTparamsName);
 FA = DTvals(:,2);
 MD = DTvals(:,1);

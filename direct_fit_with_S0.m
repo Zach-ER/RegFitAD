@@ -7,6 +7,7 @@ function [paramVals,sigGuess]=direct_fit_with_S0(DW,W,bMat,initParams,riceNoise,
 
 DWfac = 1000 * mean(DW(:,1)); %to get something on the same scale as diffusivity
 DW = DW./DWfac; 
+riceNoise = riceNoise./DWfac; 
 
 %include an extra column for the S0 
 newParams = [initParams(:,1),initParams];
@@ -35,7 +36,7 @@ options = optimoptions(@fmincon,...
     'MaxFunEvals',1000);
 else
 options = optimoptions(@lsqnonlin,...
-    'display','iter-detailed',...
+    'display','none',...
     'tolfun',1e-6',...
     'tolx',1e-6,...
     'MaxFunEvals',1000);
@@ -63,7 +64,6 @@ function differences = obj_func_direct_fit(paramVals,DW,W,bMat,sig,SSDind)
 voxParams = W * paramVals;
 sigGuess = DT_diag_forward_with_S0(bMat,voxParams);
 differences = double(DW - sqrt(sigGuess.^2 + sig.^2));
-
 
 if SSDind == 's';
     differences = differences;        
