@@ -10,7 +10,7 @@ goldStandDir = fullfile(topDir,'GoldStand');
 bvals = load(fullfile(goldStandDir,'bvals'));
 bvecs = load(fullfile(goldStandDir,'bvecs'));
 
-ctr = 1; 
+ctr = 1;
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
 for nCycles = 2:5
     nReadings = lengthCycle*nCycles;
@@ -38,16 +38,16 @@ for nCycles = 2:5
                 mkdir(itDir)
             end
             
-          % save_comb_of_bvals(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,itDir);
+            save_comb_of_bvals(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,itDir);
             
-            %copy over the files for segmentations 
-         %   system(['cp ',GS_SegName,' ',itDir]);
-         %   system(['cp ',GS_MaskName,' ',itDir]);
-
-          dirNames{ctr,1} = itDir; 
-          ctr = ctr + 1; 
-          
-          %  run_reg_fit_itDir(downSampledDir,itDir,segInds); 
+            %copy over the files for segmentations
+            system(['cp ',GS_SegName,' ',itDir]);
+            system(['cp ',GS_MaskName,' ',itDir]);
+            
+            dirNames{ctr,1} = itDir;
+            ctr = ctr + 1;
+            
+            %  run_reg_fit_itDir(downSampledDir,itDir,segInds);
             
         end
     end
@@ -60,7 +60,7 @@ GS_Name = fullfile(downSampledDir,'DW_Resampled.nii.gz');
 GS_DW = load_untouch_nii(GS_Name);
 end
 
-%saves combinations of bvals/bvecs 
+%saves combinations of bvals/bvecs
 function save_comb_of_bvals(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,itDir)
 randOrder = randperm(nTotalCycles);
 cyclesWeTake = randOrder(1:nCycles);

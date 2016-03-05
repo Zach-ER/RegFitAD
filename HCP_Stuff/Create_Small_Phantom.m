@@ -1,4 +1,4 @@
-function Create_Small_Phantom()
+function Create_Small_Phantom(outDir)
 % This function will take a piece of the HCP data to make into a phantom.
 % We are looking for somewhere that has just 3 tissue classes - 
 
@@ -24,14 +24,11 @@ xbounds = [60,80]; ybounds = [75,85]; zbounds = [80,100];
 xbounds = [75,75]; ybounds = [55,75]; zbounds = [31,41]; 
 %expName = 'OneVoxCRB'; 
 %
-expName = 'WholeFornix'; 
 xbounds = [59,83]; ybounds = [76,109]; zbounds= [49,68]; 
 
-expName = 'OneVoxFornix'; 
-xbounds = [69,69]; ybounds = [76,109]; zbounds= [49,68]; 
+%expName = 'OneVoxFornix'; 
+%xbounds = [69,69]; ybounds = [76,109]; zbounds= [49,68]; 
 
-
-outDir = fullfile(experimentDir,expName); 
 if ~exist(outDir,'dir')
     mkdir(outDir);
 end
@@ -40,9 +37,11 @@ make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,outDir);
 make_gold_stand_segs(xbounds,ybounds,zbounds,segs,outDir);
 
 fornixName = fullfile(hcpTopDirec,'Diffusion_Fornix.nii.gz');
+fornixName = fullfile(hcpTopDirec,'Diffusion_Fornix_Divided.nii.gz');
 segName = fullfile(outDir,'Segs_Reduced.nii.gz');
 fornix = crop_image(fornixName,xbounds,ybounds,zbounds); 
 outFornix = fullfile(outDir,'Segs_With_Fornix.nii.gz');
+outFornix = fullfile(outDir,'Segs_With_Fornix_Divided.nii.gz');
 
 combine_segs_label(fornix,segName,outFornix); 
 
@@ -52,14 +51,14 @@ function combine_segs_label(diffSeg,segName,outName)
 
 segs =   load_untouch_nii(segName);
 %how to scale the remaining tissue types 
-seg_scale = 1-diffSeg.img; 
+seg_scale = 1-sum(diffSeg.img,4); 
 
 scaledSegs = segs;
 for i = 1:size(segs.img,4)
     scaledSegs.img(:,:,:,i)= segs.img(:,:,:,i).*seg_scale;
 end
 
-scaledSegs.img(:,:,:,end+1) =diffSeg.img;
+scaledSegs.img = cat(4,scaledSegs.img,diffSeg.img);
 scaledSegs.hdr.dime.dim(5) = size(scaledSegs.img,4); 
 save_untouch_nii(scaledSegs,outName);
 end
@@ -76,15 +75,17 @@ end
 
 
 function make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,outDir)
+
+
+dwOut = fullfile(outDir,'DW.nii.gz');
+bvalName= fullfile(outDir,'bvals');
+bvecName= fullfile(outDir,'bvecs');
+
+if ~exist(dwOut,'file')
 DW = load_untouch_nii(DWname); 
 bval_indices = bvals < 1200; 
 bvals = bvals(bval_indices);
 bvecs = bvecs(:,bval_indices); 
-
-
-DWname = fullfile(outDir,'DW.nii.gz');
-bvalName= fullfile(outDir,'bvals');
-bvecName= fullfile(outDir,'bvecs');
 
 newDW.hdr = DW.hdr; 
 newDW.ext = DW.ext; 
@@ -95,10 +96,10 @@ newDW.untouch=DW.untouch;
 newDW.img = DW.img(xbounds(1):xbounds(2),ybounds(1):ybounds(2),...
     zbounds(1):zbounds(2),bval_indices); 
 newDW.hdr.dime.dim(2:5) = size(newDW.img); 
-save_untouch_nii(newDW,DWname); 
+save_untouch_nii(newDW,dwOut); 
 save(bvalName,'bvals','-ascii');
 save(bvecName,'bvecs','-ascii');
-
+end
 end
 
 

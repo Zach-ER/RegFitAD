@@ -23,7 +23,7 @@ def standard_dti_names(dwDIR):
 
 def get_direc_name(sysArgs):
 	if len(sysArgs) < 2:
-	print 'Please include the top directory. Exiting'
+		print 'Please include the top directory. Exiting'
 		exit()
 	else:
 		return sysArgs[1]

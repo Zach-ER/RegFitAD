@@ -3,73 +3,79 @@
 
 function Run_Start_To_Finish
 
-segNos = 1:6; 
+segNos = 1:8; 
+expName = 'DividedFornix'; 
 
-AboveDirec = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/WholeFornix';
-GoldStandDirec = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/WholeFornix/GoldStand';
+topDirec = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts';
+AboveDirec = fullfile(topDirec,expName); 
+GoldStandDirec = fullfile(AboveDirec,'GoldStand');
 %%
-%Create_Small_Phantom; 
+Create_Small_Phantom(GoldStandDirec); 
 
 %%
-%Resample_to_different(GoldStandDirec); 
+Resample_to_different(GoldStandDirec); 
 
 %%
-%PYTHON code
+sysArgs = ['source ~/.bash_profile;python ./resample_and_dtifit.py ',AboveDirec,' ',...
+    'Segs_With_Fornix_Divided.nii.gz'];
+system(sysArgs); 
+
 
 %%
 dirNames = pick_bvals_bvecs(AboveDirec); 
 
 %%
-%PYTHON code 
+sysArgs = ['source ~/.bash_profile;python ./dt_fit_phantoms.py ',AboveDirec];
+system(sysArgs); 
 
 
 %%
-% riceNoise = 0; 
-% for i = 1:length(dirNames)
-%     DiffsOut = fullfile(dirNames{i},'diffOut.txt');
-%     DTOut   = fullfile(dirNames{i},'DTOut.txt');
-%     run_reg_fit_itDir(dirNames{i},segNos,riceNoise,DiffsOut,DTOut);
-% end
+riceNoise = 0; 
+for i = 1:length(dirNames)
+    DiffsOut = fullfile(dirNames{i},'diffOut.txt');
+    DTOut   = fullfile(dirNames{i},'DTOut.txt');
+    run_reg_fit_itDir(dirNames{i},segNos,riceNoise,DiffsOut,DTOut);
+end
 
 %% Fitting different noisy phantoms. 
 %we need to record the number of readings, the Resampling number, 
 % and the iteration number before the DTI - 
-dtOuts = zeros(length(dirNames),length(segNos),5); 
-
-threshes = 0.4:.1:.9;
-classicalOuts = zeros(length(dirNames),length(segNos),5,length(threshes)); 
-riceNoise = 340; 
-
-resultsName = fullfile(AboveDirec,'NoiseResults.mat'); 
-
-
-for i = 1:length(dirNames)
-    
-    %makes another directory with the right pieces for the fitting. 
-    noiseDir = make_noise_phant(dirNames{i},riceNoise); 
-    
-    DiffsOut = fullfile(noiseDir,'diff.txt');
-    DTOut   = fullfile(noiseDir,'DT.txt');
-    run_reg_fit_itDir(noiseDir,segNos,riceNoise,DiffsOut,DTOut);
-    
-    %get the extra bits
-    [nReadings,downsampleNo,itNo] = break_down_name(dirNames{i}); 
-    extraLines = [nReadings,downsampleNo,itNo];
-    extra1 = repmat(extraLines,[6 1]);
-    
-    %now time to save the data... 
-    DTvals = load(DTOut);
-    
-    dtOuts(i,:,:)=[DTvals,extra1]; 
-        
-    DTs = get_classical_results(noiseDir,segNos, threshes);    
-    extra2 = repmat(extraLines,[ 6 1 6] );
-    classicalOuts(i,:,:,:) = [DTs,extra2]; 
-    
-    save(resultsName,'dtOuts','classicalOuts'); 
-    
-    rmdir(noiseDir,'s'); 
-end
+% dtOuts = zeros(length(dirNames),length(segNos),5); 
+% 
+% threshes = 0.4:.1:.9;
+% classicalOuts = zeros(length(dirNames),length(segNos),5,length(threshes)); 
+% riceNoise = 340; 
+% 
+% resultsName = fullfile(AboveDirec,'NoiseResults.mat'); 
+% 
+% 
+% for i = 1:length(dirNames)
+%     
+%     %makes another directory with the right pieces for the fitting. 
+%     noiseDir = make_noise_phant(dirNames{i},riceNoise); 
+%     
+%     DiffsOut = fullfile(noiseDir,'diff.txt');
+%     DTOut   = fullfile(noiseDir,'DT.txt');
+%     run_reg_fit_itDir(noiseDir,segNos,riceNoise,DiffsOut,DTOut);
+%     
+%     %get the extra bits
+%     [nReadings,downsampleNo,itNo] = break_down_name(dirNames{i}); 
+%     extraLines = [nReadings,downsampleNo,itNo];
+%     extra1 = repmat(extraLines,[6 1]);
+%     
+%     %now time to save the data... 
+%     DTvals = load(DTOut);
+%     
+%     dtOuts(i,:,:)=[DTvals,extra1]; 
+%         
+%     DTs = get_classical_results(noiseDir,segNos, threshes);    
+%     extra2 = repmat(extraLines,[ 6 1 6] );
+%     classicalOuts(i,:,:,:) = [DTs,extra2]; 
+%     
+%     save(resultsName,'dtOuts','classicalOuts'); 
+%     
+%     rmdir(noiseDir,'s'); 
+% end
 
 end
 

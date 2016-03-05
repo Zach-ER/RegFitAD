@@ -1,18 +1,19 @@
 import os 
 import shutil
 import Diff_Preprocess_Defs as DPD
+import sys
 
 
 def get_direc_name(sysArgs):
 	if len(sysArgs) < 2:
-	print 'Please include the top directory. Exiting'
+		print 'Please include the top directory. Exiting'
 		exit()
 	else:
 		return sysArgs[1]
 
 def get_seg_name(sysArgs):
-	if len(sysArgs) < 3
-	print 'Please include the segmentation name. Exiting'
+	if len(sysArgs) < 3:
+		print 'Please include the segmentation name. Exiting'
 		exit()
 	else:
 		return sysArgs[2]
@@ -54,11 +55,8 @@ for i in range(1,16):
 	#dtOut = '_'.join([dtOut,exp_ext])
 	if not os.path.isdir(dtOut):
 		os.makedirs(dtOut)
-	#if not os.path.isfile(dtOut+'/DT_MD.nii.gz'):
-	DWname = os.path.join(resampDir,'DW_Resampled.nii.gz') #DWname = os.path.join(resampDir,'DW_'+exp_ext+'.nii.gz')
-	DPD.fit_diffusion_tensor(DWname,bvecName,\
-		bvalName,refName,dtOut+'/DT',wls=True,dbg=False)
-
-	#DPD.fit_diffusion_tensor(DWname,'_'.join([bvecName,exp_ext]),\
-	#	'_'.join([bvalName,exp_ext]),refName,dtOut+'/DT',wls=True,dbg=False)
+	if not os.path.isfile(dtOut+'/DT_MD.nii.gz'):
+		DWname = os.path.join(resampDir,'DW_Resampled.nii.gz') #DWname = os.path.join(resampDir,'DW_'+exp_ext+'.nii.gz')
+		DPD.fit_diffusion_tensor(DWname,bvecName,\
+		   bvalName,refName,dtOut+'/DT',wls=True,dbg=False)
 
