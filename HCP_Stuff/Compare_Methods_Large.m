@@ -3,6 +3,7 @@ function [myMeth,classicalMeth] = Compare_Methods_Large(topDir,nSegs,thresh)
 %iterations of the comparison...
 lengthCycle  = 6;
 nIter = 40;
+segDims = 1:nSegs; %[1:3,5]; 
 
 % number of different b-val settings, iterations, nResamples, nTissues
 myMeth.FAs = zeros(15,nSegs,40,5);
@@ -10,7 +11,7 @@ myMeth.MDs = zeros(15,nSegs,40,5);
 
 classicalMeth = myMeth; 
 
-dtName = 'DTvals.txt';
+dtName = 'DTOut.txt';
 diffName = 'Diffs.txt';
 
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
@@ -28,7 +29,6 @@ for nCycles = 2:5
             myMeth.FAs(downSamplingNumber,:,iIteration,nCycles) = FA(:);
             myMeth.MDs(downSamplingNumber,:,iIteration,nCycles) = MD(:);
             
-            segDims = 1:6; %[1:3,5]; 
             [FA,MD] = get_classical(subjDir,thresh,segDims);
             classicalMeth.FAs(downSamplingNumber,:,iIteration,nCycles) = FA(:);
             classicalMeth.MDs(downSamplingNumber,:,iIteration,nCycles) = MD(:);

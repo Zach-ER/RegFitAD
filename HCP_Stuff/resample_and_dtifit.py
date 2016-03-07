@@ -48,15 +48,8 @@ for i in range(1,16):
 	if not os.path.isfile(dtOut+'/DT_MD.nii.gz'):
 		DPD.fit_diffusion_tensor(outName,bvecName,bvalName,refName,dtOut+'/DT',wls=True,dbg=False)
 
-		#Using the subject directory instead. 
-	bvalName = os.path.join(resampDir,'bvals')
-	bvecName = os.path.join(resampDir,'bvecs')
-	exp_ext = ''	
-	#dtOut = '_'.join([dtOut,exp_ext])
-	if not os.path.isdir(dtOut):
-		os.makedirs(dtOut)
-	if not os.path.isfile(dtOut+'/DT_MD.nii.gz'):
-		DWname = os.path.join(resampDir,'DW_Resampled.nii.gz') #DWname = os.path.join(resampDir,'DW_'+exp_ext+'.nii.gz')
-		DPD.fit_diffusion_tensor(DWname,bvecName,\
-		   bvalName,refName,dtOut+'/DT',wls=True,dbg=False)
+	
+
+
+
 
