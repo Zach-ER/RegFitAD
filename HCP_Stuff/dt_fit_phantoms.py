@@ -43,7 +43,8 @@ for dirName in get_immediate_subdirectories(topDir):
 				if not os.path.isdir(dtOut):
 					os.makedirs(dtOut)
 				DWname,MaskName,bvalName,bvecName = standard_dti_names(itDir)
-				DPD.fit_diffusion_tensor(DWname,bvecName,bvalName,MaskName,dtOut+'/DT',wls=True,dbg=False)
+				if not os.path.isfile(dtOut+'/DT_MD.nii.gz'):
+					DPD.fit_diffusion_tensor(DWname,bvecName,bvalName,MaskName,dtOut+'/DT',wls=True,dbg=False)
 					
 
 	

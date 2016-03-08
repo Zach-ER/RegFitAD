@@ -2,7 +2,7 @@ function dirNames =  pick_bvals_bvecs(topDir)
 %This function takes data from the gold-standard directories and pieces it
 %into smaller chunks for repetitions of the experiments.
 
-nIter = 40;
+nIter = 10;
 %how many diffusion 'cycles' there are, = 108/6 = 18 in this case
 nTotalCycles = 18;
 lengthCycle  = 6;
@@ -38,16 +38,16 @@ for nCycles = 2:5
                 mkdir(itDir)
             end
             
-            save_comb_of_bvals(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,itDir);
-            
+            if ~exist(fullfile(itDir,'DW_Resampled.nii.gz'),'file')
+                save_comb_of_bvals(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,itDir);
+            end
             %copy over the files for segmentations
-            system(['cp ',GS_SegName,' ',itDir]);
-            system(['cp ',GS_MaskName,' ',itDir]);
             
+%             system(['cp ',GS_SegName,' ',itDir]);
+%             system(['cp ',GS_MaskName,' ',itDir]);
+%             
             dirNames{ctr,1} = itDir;
             ctr = ctr + 1;
-            
-            %  run_reg_fit_itDir(downSampledDir,itDir,segInds);
             
         end
     end

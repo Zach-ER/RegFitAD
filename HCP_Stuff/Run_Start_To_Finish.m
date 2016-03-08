@@ -4,20 +4,21 @@
 function Run_Start_To_Finish
 
 segNos = 1:8; 
-expName = 'DividedFornix'; 
+expName = 'DivFornixBoundingBox'; 
+segName = 'Segs_With_Fornix.nii.gz';%'Segs_With_Fornix_Divided.nii.gz'
 
 topDirec = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts';
 AboveDirec = fullfile(topDirec,expName); 
 GoldStandDirec = fullfile(AboveDirec,'GoldStand');
 %%
-Create_Small_Phantom(GoldStandDirec); 
+%Create_Small_Phantom(GoldStandDirec); 
 
 %%
-Resample_to_different(GoldStandDirec); 
+%Resample_to_different(GoldStandDirec); 
 
 %%
 sysArgs = ['source ~/.bash_profile;python ./resample_and_dtifit.py ',AboveDirec,' ',...
-    'Segs_With_Fornix_Divided.nii.gz'];
+    segName];
 system(sysArgs); 
 
 
@@ -26,15 +27,35 @@ dirNames = pick_bvals_bvecs(AboveDirec);
 
 %%
 sysArgs = ['source ~/.bash_profile;python ./dt_fit_phantoms.py ',AboveDirec];
-system(sysArgs); 
+%system(sysArgs); 
 
 
 %%
 riceNoise = 0; 
-for i = 1:length(dirNames)
-    DiffsOut = fullfile(dirNames{i},'diffOut.txt');
+tic
+for i = 1:10%length(dirNames)
+    DiffsOut = fullfile(dirNames{i},'diffOutwSig.txt');
     DTOut   = fullfile(dirNames{i},'DTOut.txt');
-    run_reg_fit_itDir(dirNames{i},segNos,riceNoise,DiffsOut,DTOut);
+    
+    if ~exist(DiffsOut,'file')
+        
+        if i > 1
+           initParams = load(oldDiff); 
+           initParams(:,1) = []; 
+        else
+           initParams = 'n';
+        end
+        
+        if mod(i,10) == 0
+            fprintf('We are on iteration %i of %i at time %d \n',i,length(dirNames),toc)
+        end
+        run_reg_fit_itDir(dirNames{i},segNos,riceNoise,DiffsOut,DTOut,initParams);
+        
+    end
+    %this is to speed up by initialising with our last answer. This should
+    %be OK as long as the region-search is exhaustive enough...
+    oldDiff = DiffsOut; 
+    
 end
 
 %% Fitting different noisy phantoms. 

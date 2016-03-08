@@ -116,6 +116,8 @@ save_untouch_nii(segsOut,segsOutName);
 Mask = segsOut;
 Mask.img = sum(segsOut.img,4) > .5;
 Mask.hdr.dime.dim(2:4) = size(Mask.img);
+Mask.hdr.dime.dim(1) = 3; 
+Mask.hdr.dime.datatype = 4;
 MaskName = fullfile(outDir,'Mask.nii.gz');
 save_untouch_nii(Mask,MaskName);
 

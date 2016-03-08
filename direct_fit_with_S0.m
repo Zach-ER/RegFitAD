@@ -14,9 +14,7 @@ newParams = [initParams(:,1),initParams];
 
 %% fitting the thing 
 [paramVals, sigGuess] = do_fit(DW,W,bMat,newParams,riceNoise,SSDind);
-  
-paramVals(:,1) = []; 
-    
+     
 end
 
 function  [paramVals,sigGuess]  = do_fit(DW,W,bMat,initParams,sig,SSDind)

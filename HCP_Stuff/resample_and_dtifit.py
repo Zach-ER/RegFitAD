@@ -32,8 +32,9 @@ for i in range(1,16):
 	floName = os.path.join(gsDir,diffSegName)
 	
 	if not os.path.isfile(outName):
-		DPD.reg_resample(refName,floName,outName)
+		DPD.reg_resample(refName,floName,outName,other_args = '-psf')
 
+	exit()
 	outName = os.path.join(resampDir,'DW_Resampled.nii.gz')
 	floName = os.path.join(gsDir,'DW.nii.gz')
 	if not os.path.isfile(outName):
