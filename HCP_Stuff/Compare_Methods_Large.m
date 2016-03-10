@@ -1,37 +1,39 @@
-function [myMeth,classicalMeth] = Compare_Methods_Large(topDir,nSegs,thresh)
+function [myMeth,classicalMeth] = Compare_Methods_Large(topDir,nSegs,thresh,dirBase)
 %This will plot the estimates for the different approaches. For all
 %iterations of the comparison...
 lengthCycle  = 6;
-nIter = 40;
+nIter = 10;
 segDims = 1:nSegs; %[1:3,5]; 
+nResamps = 8; 
 
 % number of different b-val settings, iterations, nResamples, nTissues
-myMeth.FAs = zeros(15,nSegs,40,5);
-myMeth.MDs = zeros(15,nSegs,40,5);
+myMeth.FAs = zeros(nResamps,nSegs,nIter,5);
+myMeth.MDs = zeros(nResamps,nSegs,nIter,5);
 
 classicalMeth = myMeth; 
 
-dtName = 'DTOut.txt';
-diffName = 'Diffs.txt';
+dtName = 'DTOutS0s300.txt';
+diffName = 'DiffOutsS0s300.txt';
 
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
-for nCycles = 2:5
-    nReadings = lengthCycle*nCycles;
+nCycles = [2,3,5,8,10];
+for whichCycle = 1:5
+    nReadings = lengthCycle*nCycles(whichCycle);
     dataDirName = fullfile(topDir,[num2str(nReadings),'_Readings']);
-    for downSamplingNumber = 1:15
+    for downSamplingNumber = 1:nResamps
         for iIteration = 1:nIter
             downSampledNewDir = fullfile(dataDirName,['Downsampled_',num2str(downSamplingNumber)]);
-            subjDir = fullfile(downSampledNewDir,['It_',num2str(iIteration)]);
+            subjDir = fullfile(downSampledNewDir,[dirBase,num2str(iIteration)]);
             
             %
             [FA,MD] = get_my_meth(subjDir,diffName,dtName);
             
-            myMeth.FAs(downSamplingNumber,:,iIteration,nCycles) = FA(:);
-            myMeth.MDs(downSamplingNumber,:,iIteration,nCycles) = MD(:);
+            myMeth.FAs(downSamplingNumber,:,iIteration,whichCycle) = FA(:);
+            myMeth.MDs(downSamplingNumber,:,iIteration,whichCycle) = MD(:);
             
             [FA,MD] = get_classical(subjDir,thresh,segDims);
-            classicalMeth.FAs(downSamplingNumber,:,iIteration,nCycles) = FA(:);
-            classicalMeth.MDs(downSamplingNumber,:,iIteration,nCycles) = MD(:);
+            classicalMeth.FAs(downSamplingNumber,:,iIteration,whichCycle) = FA(:);
+            classicalMeth.MDs(downSamplingNumber,:,iIteration,whichCycle) = MD(:);
         end
     end
 end

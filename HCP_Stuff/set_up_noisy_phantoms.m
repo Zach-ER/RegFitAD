@@ -1,4 +1,4 @@
-function dirNames =  pick_bvals_bvecs(topDir)
+function dirNames = set_up_noisy_phantoms(topDir,sig)
 %This function takes data from the gold-standard directories and pieces it
 %into smaller chunks for repetitions of the experiments.
 
@@ -6,14 +6,14 @@ nIter = 10;
 %how many diffusion 'cycles' there are, = 108/6 = 18 in this case
 nTotalCycles = 18;
 lengthCycle  = 6;
-nResamps = 10; 
+nResamps = 8; 
 goldStandDir = fullfile(topDir,'GoldStand');
 bvals = load(fullfile(goldStandDir,'bvals'));
 bvecs = load(fullfile(goldStandDir,'bvecs'));
 
 ctr = 1;
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
-for nCycles = 2
+for nCycles = [2,3,5,8,10]
     nReadings = lengthCycle*nCycles;
     dataDirName = fullfile(topDir,[num2str(nReadings),'_Readings']);
     if ~exist(dataDirName,'dir')
@@ -34,20 +34,20 @@ for nCycles = 2
                 mkdir(downSampledNewDir)
             end
             
-            itDir = fullfile(downSampledNewDir,['It_',num2str(iIteration)]);
-            if ~exist(itDir,'dir')
-                mkdir(itDir)
+            noiseDir = fullfile(downSampledNewDir,['Noise_',num2str(iIteration)]);
+            if ~exist(noiseDir,'dir')
+                mkdir(noiseDir)
             end
             
-            if ~exist(fullfile(itDir,'DW_Resampled.nii.gz'),'file')
-                save_comb_of_bvals(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,itDir);
+            if ~exist(fullfile(noiseDir,'DW_Resampled.nii.gz'),'file')
+                save_new_data(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,noiseDir,sig);
             end
             %copy over the files for segmentations
             
-            system(['cp ',GS_SegName,' ',itDir]);
-            system(['cp ',GS_MaskName,' ',itDir]);
+            system(['cp ',GS_SegName,' ',noiseDir]);
+            system(['cp ',GS_MaskName,' ',noiseDir]);
 %             
-            dirNames{ctr,1} = itDir;
+            dirNames{ctr,1} = noiseDir;
             ctr = ctr + 1;
             
         end
@@ -62,8 +62,8 @@ GS_DW = load_untouch_nii(GS_Name);
 end
 
 %saves combinations of bvals/bvecs
-function save_comb_of_bvals(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,itDir)
-randOrder = randperm(nTotalCycles);
+function save_new_data(bvals,bvecs,GS_DW,nTotalCycles,nCycles,lengthCycle,itDir,sig)
+randOrder = 1:nTotalCycles;
 cyclesWeTake = randOrder(1:nCycles);
 
 diffusionInds = [];
@@ -72,13 +72,14 @@ for iList = 1:length(cyclesWeTake)
     diffusionInds = [diffusionInds,startInd:startInd+lengthCycle-1];
 end
 
-name_save_new_diff_data(bvals,bvecs,GS_DW,diffusionInds,itDir);
+name_save_new_diff_data(bvals,bvecs,GS_DW,diffusionInds,itDir,sig);
 end
 
 
-function name_save_new_diff_data(bvals,bvecs,GS_DW,diffusionInds,itDir)
+function name_save_new_diff_data(bvals,bvecs,GS_DW,diffusionInds,itDir,sig)
 newDW = GS_DW;
 newDW.img = newDW.img(:,:,:,diffusionInds);
+newDW.img = add_rician_noise(newDW.img,sig); 
 newDW.hdr.dime.dim(2:5) = size(newDW.img);
 newBvals = bvals(diffusionInds);
 newBvecs = bvecs(:,diffusionInds);

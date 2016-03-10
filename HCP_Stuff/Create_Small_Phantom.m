@@ -1,4 +1,4 @@
-function Create_Small_Phantom(outDir)
+function Create_Small_Phantom(hcpTopDirec,expName)
 % This function will take a piece of the HCP data to make into a phantom.
 % We are looking for somewhere that has just 3 tissue classes - 
 
@@ -6,9 +6,6 @@ function Create_Small_Phantom(outDir)
 % at different resolutions. 
 
 % we will take into account the first 16 or so b-values - 
-
-hcpTopDirec = '/Users/zer/RegFitAD/data/HCPwStruct/Processed';
-experimentDir = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts'; 
 
 DWname = '/Users/zer/RegFitAD/data/HCPwStruct/122317/T1w/Diffusion/data.nii.gz';
 SegsName = fullfile(hcpTopDirec,'Segs_Diffspace.nii.gz'); 
@@ -18,30 +15,17 @@ bvecs = load('/Users/zer/RegFitAD/data/HCPwStruct/122317/T1w/Diffusion/bvecs');
 
 segs = load_untouch_nii(SegsName); 
 
-%wm/gm
-xbounds = [60,80]; ybounds = [75,85]; zbounds = [80,100]; 
-%cerebellum
-xbounds = [75,75]; ybounds = [55,75]; zbounds = [31,41]; 
-%expName = 'OneVoxCRB'; 
-%
-xbounds = [59,83]; ybounds = [76,109]; zbounds= [49,68]; 
-
-%expName = 'OneVoxFornix'; 
-%xbounds = [69,69]; ybounds = [76,109]; zbounds= [49,68]; 
-
-if ~exist(outDir,'dir')
-    mkdir(outDir);
+if ~exist(expName,'dir')
+    mkdir(expName);
 end
 
-make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,outDir);
-make_gold_stand_segs(xbounds,ybounds,zbounds,segs,outDir);
+make_gold_stand_DW(bvals,bvecs,DWname,expName);
+make_gold_stand_segs(segs,expName);
 
-fornixName = fullfile(hcpTopDirec,'Diffusion_Fornix.nii.gz');
 fornixName = fullfile(hcpTopDirec,'Diffusion_Fornix_Divided.nii.gz');
-segName = fullfile(outDir,'Segs_Reduced.nii.gz');
-fornix = crop_image(fornixName,xbounds,ybounds,zbounds); 
-outFornix = fullfile(outDir,'Segs_With_Fornix.nii.gz');
-outFornix = fullfile(outDir,'Segs_With_Fornix_Divided.nii.gz');
+segName = fullfile(expName,'Segs_Reduced.nii.gz');
+fornix = load_untouch_nii(fornixName); 
+outFornix = fullfile(expName,'Segs_With_Fornix.nii.gz');
 
 combine_segs_label(fornix,segName,outFornix); 
 
@@ -74,7 +58,7 @@ cropped.hdr.dime.dim(2:4) = [size(cropped.img,1),size(cropped.img,2),...
 end
 
 
-function make_gold_stand_DW(xbounds,ybounds,zbounds,bvals,bvecs,DWname,outDir)
+function make_gold_stand_DW(bvals,bvecs,DWname,outDir)
 
 
 dwOut = fullfile(outDir,'DW.nii.gz');
@@ -93,8 +77,7 @@ newDW.fileprefix=DW.fileprefix ;
 newDW.filetype=DW.filetype ;
 newDW.machine=DW.machine ;
 newDW.untouch=DW.untouch;
-newDW.img = DW.img(xbounds(1):xbounds(2),ybounds(1):ybounds(2),...
-    zbounds(1):zbounds(2),bval_indices); 
+newDW.img = DW.img(:,:,:,bval_indices); 
 newDW.hdr.dime.dim(2:5) = size(newDW.img); 
 save_untouch_nii(newDW,dwOut); 
 save(bvalName,'bvals','-ascii');
@@ -103,10 +86,9 @@ end
 end
 
 
-function make_gold_stand_segs(xbounds,ybounds,zbounds,segs,outDir)
+function make_gold_stand_segs(segs,outDir)
 
-segImg = segs.img(xbounds(1):xbounds(2),ybounds(1):ybounds(2),...
-    zbounds(1):zbounds(2),:); 
+segImg = segs.img(:,:,:,:); 
 segsOutName = fullfile(outDir,'Segs_Reduced.nii.gz');
 segsOut = segs; 
 segsOut.img = segImg;
@@ -121,26 +103,8 @@ Mask.hdr.dime.datatype = 4;
 MaskName = fullfile(outDir,'Mask.nii.gz');
 save_untouch_nii(Mask,MaskName);
 
-MaskDWImg = zeros(size(segs.img,1),size(segs.img,2),size(segs.img,3));
-MaskDWImg(xbounds(1):xbounds(2),ybounds(1):ybounds(2),...
-    zbounds(1):zbounds(2)) = 1; 
-MaskDW = segs; 
-MaskDW.img = MaskDWImg;
-MaskDW.hdr.dime.dim(5) = 1; 
-MaskDW.hdr.dime.dim(1) = 3;  
-MaskDWName = fullfile(outDir,'DWmask.nii.gz');
-save_untouch_nii(MaskDW,MaskDWName);
-
-
 end
 
-%% defining out region-of-interest mask - this was to check where I had put it
-% mask = zeros(size(segs.img,1),size(segs.img,2),size(segs.img,3));
-% mask(xbounds(1):xbounds(2),ybounds(1):ybounds(2),zbounds(1):zbounds(2)) = true;
-% maskOut = segs; 
-% maskOut.hdr.dime.dim(5) = 1;
-% maskOutName = fullfile(experimentDir,'GoldStand','DWmask.nii.gz');
-% maskOut.img = mask;
-% save_untouch_nii(maskOut,maskOutName);
+
 
 

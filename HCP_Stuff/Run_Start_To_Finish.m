@@ -4,58 +4,63 @@
 function Run_Start_To_Finish
 
 segNos = 1:8; 
-expName = 'DivFornixBoundingBox'; 
+expName = 'Noise1'; 
 segName = 'Segs_With_Fornix.nii.gz';%'Segs_With_Fornix_Divided.nii.gz'
+nResamps = 8; 
+riceNoise=300; 
 
+funcDirec = '/Users/zer/RegFitAD/code/HCP_Stuff';
+hcpTopDirec = '/Users/zer/RegFitAD/data/HCPwStruct/Processed';
 topDirec = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts';
-AboveDirec = fullfile(topDirec,expName); 
-GoldStandDirec = fullfile(AboveDirec,'GoldStand');
+expDir = fullfile(topDirec,expName); 
+GoldStandDirec = fullfile(expDir,'GoldStand');
+
 %%
-%Create_Small_Phantom(GoldStandDirec); 
+%Create_Small_Phantom(hcpTopDirec,GoldStandDirec); 
 
 %%
 %Resample_to_different(GoldStandDirec); 
 
-%%
-sysArgs = ['source ~/.bash_profile;python ./resample_and_dtifit.py ',AboveDirec,' ',...
-    segName];
+%% resample the whole things
+sysArgs = ['source ~/.bash_profile;python ./resample_and_dtifit.py ',expDir,' ',...
+    segName,' Segs_Whole.nii.gz DW_whole.nii.gz Mask.nii.gz 0'];
 system(sysArgs); 
 
-
+%% cut them down to size
+for downSamplingNumber = 1:nResamps
+    downSampledDir = fullfile(GoldStandDirec,['downSampled_',num2str(downSamplingNumber)]);
+    chdir(downSampledDir);
+    Cut_Segs_Down( 6:8, 'Segs_Whole.nii.gz', 'Segs_Resampled.nii.gz', 'DW_whole.nii.gz','DW_Resampled.nii.gz','Mask.nii.gz');
+    chdir(funcDirec);
+end
 %%
-dirNames = pick_bvals_bvecs(AboveDirec); 
-
+%dirNames = pick_bvals_bvecs(expDir); 
+dirNames = set_up_noisy_phantoms(expDir,riceNoise);
 %%
-sysArgs = ['source ~/.bash_profile;python ./dt_fit_phantoms.py ',AboveDirec];
-%system(sysArgs); 
-
-
+sysArgs = ['source ~/.bash_profile;python ./dt_fit_phantoms.py ',expDir];
+system(sysArgs); 
 %%
-riceNoise = 0; 
 tic
-for i = 1:10%length(dirNames)
-    DiffsOut = fullfile(dirNames{i},'diffOutwSig.txt');
-    DTOut   = fullfile(dirNames{i},'DTOut.txt');
-    
-    if ~exist(DiffsOut,'file')
-        
+for i = 1:length(dirNames)
+    DiffsOut = fullfile(dirNames{i},'diffOutS0s300.txt');
+    DTOut   = fullfile(dirNames{i},'DTOutS0s300.txt');
+    %if ~exist(DiffsOut,'file')
         if i > 1
            initParams = load(oldDiff); 
-           initParams(:,1) = []; 
+           if size(initParams,2) == 4
+                initParams(:,1) = []; 
+           end
         else
            initParams = 'n';
         end
-        
         if mod(i,10) == 0
             fprintf('We are on iteration %i of %i at time %d \n',i,length(dirNames),toc)
         end
         run_reg_fit_itDir(dirNames{i},segNos,riceNoise,DiffsOut,DTOut,initParams);
-        
-    end
+    %end
     %this is to speed up by initialising with our last answer. This should
     %be OK as long as the region-search is exhaustive enough...
     oldDiff = DiffsOut; 
-    
 end
 
 %% Fitting different noisy phantoms. 

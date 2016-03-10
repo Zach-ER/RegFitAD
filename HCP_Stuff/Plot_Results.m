@@ -3,10 +3,10 @@ function Plot_Results(results,figNums,nBval)
 data{1} = results.FAs; 
 data{2} = results.MDs; 
 
-for i = 1:length(figNums)
-    plot_data(data{i},figNums(i),nBval); 
-    
-end
+plot_data(data{1},figNums(1),nBval); 
+set(gca,'ylim',[0 1])
+plot_data(data{2},figNums(2),nBval); 
+set(gca,'ylim',[0 3e-3])
 
 end
 
@@ -15,7 +15,8 @@ function plot_data(param,figNum,nBval)
 figure(figNum)
 clf
 hold on 
-for i = 1:40
+%number of iterations
+for i = 1:size(param,3)
    
     data = squeeze(param(:,:,i,nBval)); 
     plot(data(:,1),'xr-'); 
