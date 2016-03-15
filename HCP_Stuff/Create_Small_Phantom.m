@@ -7,6 +7,7 @@ function Create_Small_Phantom(hcpTopDirec,expName)
 
 % we will take into account the first 16 or so b-values - 
 
+pad = 10; 
 DWname = '/Users/zer/RegFitAD/data/HCPwStruct/122317/T1w/Diffusion/data.nii.gz';
 SegsName = fullfile(hcpTopDirec,'Segs_Diffspace.nii.gz'); 
 
@@ -19,19 +20,46 @@ if ~exist(expName,'dir')
     mkdir(expName);
 end
 
-make_gold_stand_DW(bvals,bvecs,DWname,expName);
-make_gold_stand_segs(segs,expName);
-
+make_gold_stand_segs(segs,expName,'Segs_Whole.nii.gz');
 fornixName = fullfile(hcpTopDirec,'Diffusion_Fornix_Divided.nii.gz');
-segName = fullfile(expName,'Segs_Reduced.nii.gz');
+segName = fullfile(expName,'Segs_Whole.nii.gz');
 fornix = load_untouch_nii(fornixName); 
 outFornix = fullfile(expName,'Segs_With_Fornix.nii.gz');
+fornSeg = combine_segs_label(fornix,segName,outFornix); 
 
-combine_segs_label(fornix,segName,outFornix); 
+[xbounds,ybounds,zbounds]=get_seg_box(fornSeg,6:8,pad); 
+
+segOut = fullfile(expName,'Segs_Whole.nii.gz'); 
+seg = crop_image(fornSeg,xbounds,ybounds,zbounds,segOut); 
+
+MaskName = fullfile(expName,'Mask.nii.gz');
+make_mask_from_segs(seg,MaskName);
+
+outDW = fullfile(expName,'DW.nii.gz'); 
+if ~exist(outDW,'file')
+    newDW  = make_gold_stand_DW(bvals,bvecs,DWname,expName);
+    crop_image(newDW,xbounds,ybounds,zbounds,outDW);
+end
 
 end
 
-function combine_segs_label(diffSeg,segName,outName)
+%seg nifti, then the padding that we want to give it (probably 3
+function [xbounds,ybounds,zbounds]=get_seg_box(segs,segDims,pad)
+
+
+maskOfInterest = sum(segs.img(:,:,:,segDims),4);
+RP = regionprops(maskOfInterest>.01,'BoundingBox'); 
+BB = RP.BoundingBox;
+
+xbounds = floor(BB(2))-pad:floor(BB(2))+BB(5)+2*pad; 
+ybounds = floor(BB(1))-pad:floor(BB(1))+BB(4)+2*pad; 
+zbounds = floor(BB(3))-pad:floor(BB(3))+BB(6)+2*pad; 
+
+
+
+end
+
+function scaledSegs = combine_segs_label(diffSeg,segName,outName)
 
 segs =   load_untouch_nii(segName);
 %how to scale the remaining tissue types 
@@ -47,18 +75,27 @@ scaledSegs.hdr.dime.dim(5) = size(scaledSegs.img,4);
 save_untouch_nii(scaledSegs,outName);
 end
 
-function cropped = crop_image(imageName,xbounds,ybounds,zbounds)
+function cropped = crop_image(oldImg,xbounds,ybounds,zbounds,outName)
 
-cropped = load_untouch_nii(imageName); 
-cropped.img = cropped.img(xbounds(1):xbounds(2),ybounds(1):ybounds(2),...
-    zbounds(1):zbounds(2),:);
+cropped = oldImg;
+cropped.img = oldImg.img(xbounds,ybounds,zbounds,:);
 cropped.hdr.dime.dim(2:4) = [size(cropped.img,1),size(cropped.img,2),...
     size(cropped.img,3)];
+
+% cropped.hdr.hist.srow_x(4) = oldImg.hdr.hist.srow_x(4) ...
+%     + sign(cropped.hdr.hist.srow_x(1)).* xbounds(1);
+% cropped.hdr.hist.srow_y(4) = oldImg.hdr.hist.srow_y(4) ...
+%     + sign(cropped.hdr.hist.srow_y(2)).*ybounds(1);
+% cropped.hdr.hist.srow_z(4) = oldImg.hdr.hist.srow_z(4)...
+%     + sign(cropped.hdr.hist.srow_z(3)).*zbounds(1);
+% 
+
+save_untouch_nii(cropped,outName); 
 
 end
 
 
-function make_gold_stand_DW(bvals,bvecs,DWname,outDir)
+function newDW = make_gold_stand_DW(bvals,bvecs,DWname,outDir)
 
 
 dwOut = fullfile(outDir,'DW.nii.gz');
@@ -86,25 +123,27 @@ end
 end
 
 
-function make_gold_stand_segs(segs,outDir)
+function make_gold_stand_segs(segs,outDir,segsOut)
 
 segImg = segs.img(:,:,:,:); 
-segsOutName = fullfile(outDir,'Segs_Reduced.nii.gz');
+segsOutName = fullfile(outDir,segsOut);
 segsOut = segs; 
 segsOut.img = segImg;
 segsOut.hdr.dime.dim(2:5) = size(segImg);
 save_untouch_nii(segsOut,segsOutName);
 
-Mask = segsOut;
-Mask.img = sum(segsOut.img,4) > .5;
+end
+
+function make_mask_from_segs(segs,MaskName)
+
+Mask = segs;
+Mask.img = sum(segs.img,4) > .5;
 Mask.hdr.dime.dim(2:4) = size(Mask.img);
 Mask.hdr.dime.dim(1) = 3; 
 Mask.hdr.dime.datatype = 4;
-MaskName = fullfile(outDir,'Mask.nii.gz');
 save_untouch_nii(Mask,MaskName);
 
 end
-
 
 
 

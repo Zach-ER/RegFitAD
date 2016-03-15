@@ -4,47 +4,58 @@
 function Run_Start_To_Finish
 
 segNos = 1:8; 
-expName = 'Noise1'; 
+expName = 'Noise200'; 
 segName = 'Segs_With_Fornix.nii.gz';%'Segs_With_Fornix_Divided.nii.gz'
-nResamps = 8; 
-riceNoise=300; 
+nResamps = 15; 
+scaleFacs=(linspace(1,20,nResamps)).^1/3;
+riceNoise=200; 
+nIter = 10;
 
-funcDirec = '/Users/zer/RegFitAD/code/HCP_Stuff';
 hcpTopDirec = '/Users/zer/RegFitAD/data/HCPwStruct/Processed';
 topDirec = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts';
 expDir = fullfile(topDirec,expName); 
 GoldStandDirec = fullfile(expDir,'GoldStand');
 
 %%
-%Create_Small_Phantom(hcpTopDirec,GoldStandDirec); 
-
+Create_Small_Phantom(hcpTopDirec,GoldStandDirec); 
+    
 %%
-%Resample_to_different(GoldStandDirec); 
+Resample_to_different(GoldStandDirec,'Segs_Whole.nii.gz',scaleFacs); 
 
 %% resample the whole things
 sysArgs = ['source ~/.bash_profile;python ./resample_and_dtifit.py ',expDir,' ',...
-    segName,' Segs_Whole.nii.gz DW_whole.nii.gz Mask.nii.gz 0'];
+    'Segs_Whole.nii.gz',' Segs_Whole.nii.gz DW_Resampled.nii.gz MaskForResampling.nii.gz 0'];
 system(sysArgs); 
 
 %% cut them down to size
 for downSamplingNumber = 1:nResamps
     downSampledDir = fullfile(GoldStandDirec,['downSampled_',num2str(downSamplingNumber)]);
-    chdir(downSampledDir);
-    Cut_Segs_Down( 6:8, 'Segs_Whole.nii.gz', 'Segs_Resampled.nii.gz', 'DW_whole.nii.gz','DW_Resampled.nii.gz','Mask.nii.gz');
-    chdir(funcDirec);
+    Cut_Segs_Down( 6:8,...
+        fullfile(downSampledDir,'Segs_Whole.nii.gz'),...
+        fullfile(downSampledDir,'Segs_Resampled.nii.gz'),...
+        fullfile(downSampledDir,'Mask.nii.gz'));
 end
 %%
 %dirNames = pick_bvals_bvecs(expDir); 
-dirNames = set_up_noisy_phantoms(expDir,riceNoise);
+dirNames = set_up_noisy_phantoms(expDir,riceNoise,nIter);
 %%
 sysArgs = ['source ~/.bash_profile;python ./dt_fit_phantoms.py ',expDir];
 system(sysArgs); 
 %%
 tic
+
+upsInd = 0; 
+riceInd = 250;
 for i = 1:length(dirNames)
-    DiffsOut = fullfile(dirNames{i},'diffOutS0s300.txt');
-    DTOut   = fullfile(dirNames{i},'DTOutS0s300.txt');
-    %if ~exist(DiffsOut,'file')
+    if upsInd == 1
+        DiffsOut = fullfile(dirNames{i},'diffsUps.txt');
+        DTOut   = fullfile(dirNames{i},'DTups.txt');
+    else
+        DiffsOut = fullfile(dirNames{i},'diffOut.txt');
+        DTOut   = fullfile(dirNames{i},'DTout.txt');
+    end
+    
+    if ~exist(DiffsOut,'file')
         if i > 1
            initParams = load(oldDiff); 
            if size(initParams,2) == 4
@@ -56,54 +67,86 @@ for i = 1:length(dirNames)
         if mod(i,10) == 0
             fprintf('We are on iteration %i of %i at time %d \n',i,length(dirNames),toc)
         end
-        run_reg_fit_itDir(dirNames{i},segNos,riceNoise,DiffsOut,DTOut,initParams);
-    %end
+        run_reg_fit_itDir(dirNames{i},segNos,riceNoise,DiffsOut,DTOut,initParams,upsInd);
+        
+    end
     %this is to speed up by initialising with our last answer. This should
     %be OK as long as the region-search is exhaustive enough...
     oldDiff = DiffsOut; 
 end
 
-%% Fitting different noisy phantoms. 
-%we need to record the number of readings, the Resampling number, 
-% and the iteration number before the DTI - 
-% dtOuts = zeros(length(dirNames),length(segNos),5); 
-% 
-% threshes = 0.4:.1:.9;
-% classicalOuts = zeros(length(dirNames),length(segNos),5,length(threshes)); 
-% riceNoise = 340; 
-% 
-% resultsName = fullfile(AboveDirec,'NoiseResults.mat'); 
-% 
-% 
-% for i = 1:length(dirNames)
-%     
-%     %makes another directory with the right pieces for the fitting. 
-%     noiseDir = make_noise_phant(dirNames{i},riceNoise); 
-%     
-%     DiffsOut = fullfile(noiseDir,'diff.txt');
-%     DTOut   = fullfile(noiseDir,'DT.txt');
-%     run_reg_fit_itDir(noiseDir,segNos,riceNoise,DiffsOut,DTOut);
-%     
-%     %get the extra bits
-%     [nReadings,downsampleNo,itNo] = break_down_name(dirNames{i}); 
-%     extraLines = [nReadings,downsampleNo,itNo];
-%     extra1 = repmat(extraLines,[6 1]);
-%     
-%     %now time to save the data... 
-%     DTvals = load(DTOut);
-%     
-%     dtOuts(i,:,:)=[DTvals,extra1]; 
-%         
-%     DTs = get_classical_results(noiseDir,segNos, threshes);    
-%     extra2 = repmat(extraLines,[ 6 1 6] );
-%     classicalOuts(i,:,:,:) = [DTs,extra2]; 
-%     
-%     save(resultsName,'dtOuts','classicalOuts'); 
-%     
-%     rmdir(noiseDir,'s'); 
-% end
+
+%linear or cubic
+order = 3;
+%upsample_in_directories(dirNames,order); 
+%dtiFit_Upsampled(dirNames,order); 
 
 end
+
+%will upsample the data in the directories 
+function dtiFit_Upsampled(dirNames,order)
+
+for iUpsamp = 1:length(dirNames)
+    if order == 3
+        DWhigh = fullfile(dirNames{iUpsamp},'DW_Upsampled_Cubic.nii.gz'); 
+        DTnom = 'DT';
+    elseif order ==1 
+        DWhigh = fullfile(dirNames{iUpsamp},'DW_Upsampled_Lin.nii.gz'); 
+        DTnom = 'DTLin';
+    end
+    if iUpsamp == 1
+        maskName = fullfile(dirNames{iUpsamp},'Mask.nii.gz');
+    end
+    
+    outFold = fullfile(dirNames{iUpsamp},'DThigh');
+    bvalName = fullfile(dirNames{iUpsamp},'bvals');
+    bvecName = fullfile(dirNames{iUpsamp},'bvecs');
+    
+    if ~exist(outFold,'dir')
+        mkdir(outFold)
+    end
+    
+    
+    if exist(DWhigh,'file')
+    if ~exist(fullfile(outFold,[DTnom,'_FA.nii.gz']),'file')
+        sysArgs = ['source ~/.bash_profile; dtifit -k ',DWhigh,' -m ',maskName,...
+            ' -b ',bvalName, ' -r ',bvecName, ' -o ',fullfile(outFold,DTnom),...
+            ' -w --save_tensor'];
+        system(sysArgs);
+    end
+    end
+end
+end
+
+
+
+function upsample_in_directories(dirNames,order)
+
+for iUpsamp = 1:length(dirNames)
+    
+    DWlow = fullfile(dirNames{iUpsamp},'DW_Resampled.nii.gz');
+    if iUpsamp == 1
+        refVol = DWlow;
+    end
+    
+   if order == 3
+       DWhigh = fullfile(dirNames{iUpsamp},'DW_Upsampled_Cubic.nii.gz');
+   elseif order == 1 
+       DWhigh = fullfile(dirNames{iUpsamp},'DW_Upsampled_Lin.nii.gz');
+   end
+   
+    if ~exist(DWhigh,'file')
+        sysArgs = ['source ~/.bash_profile; reg_resample -ref ',refVol,' -flo ',...
+            DWlow,' -res ',DWhigh, ' -inter ', num2str(order)];
+        system(sysArgs);
+    end
+        
+
+end
+
+end
+
+
 
 function DTs = get_classical_results(subjDir,segNos,threshes)
 

@@ -1,19 +1,18 @@
-function dirNames = set_up_noisy_phantoms(topDir,sig)
+function dirNames = set_up_noisy_phantoms(topDir,sig,nIter)
 %This function takes data from the gold-standard directories and pieces it
 %into smaller chunks for repetitions of the experiments.
 
-nIter = 10;
 %how many diffusion 'cycles' there are, = 108/6 = 18 in this case
 nTotalCycles = 18;
 lengthCycle  = 6;
-nResamps = 8; 
+nResamps = 11; 
 goldStandDir = fullfile(topDir,'GoldStand');
 bvals = load(fullfile(goldStandDir,'bvals'));
 bvecs = load(fullfile(goldStandDir,'bvecs'));
 
 ctr = 1;
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
-for nCycles = [2,3,5,8,10]
+for nCycles = [2,5,10]
     nReadings = lengthCycle*nCycles;
     dataDirName = fullfile(topDir,[num2str(nReadings),'_Readings']);
     if ~exist(dataDirName,'dir')
@@ -23,12 +22,14 @@ for nCycles = [2,3,5,8,10]
     for downSamplingNumber = 1:nResamps
         downSampledDir = fullfile(goldStandDir,['downSampled_',num2str(downSamplingNumber)]);
         
+        
+        segNom = 'Segs_Resampled.nii.gz'; maskNom = 'Mask.nii.gz';
         GS_DW = get_GS_data(downSampledDir);
-        GS_SegName = fullfile(downSampledDir,'Segs_Resampled.nii.gz');
-        GS_MaskName = fullfile(downSampledDir,'Mask.nii.gz');
+        GS_SegName = fullfile(downSampledDir,segNom);
+        GS_MaskName = fullfile(downSampledDir,maskNom);
         
         for iIteration = 1:nIter
-            
+           
             downSampledNewDir = fullfile(dataDirName,['Downsampled_',num2str(downSamplingNumber)]);
             if ~exist(downSampledNewDir,'dir')
                 mkdir(downSampledNewDir)
@@ -44,9 +45,13 @@ for nCycles = [2,3,5,8,10]
             end
             %copy over the files for segmentations
             
-            system(['cp ',GS_SegName,' ',noiseDir]);
-            system(['cp ',GS_MaskName,' ',noiseDir]);
-%             
+            if ~exist(fullfile(noiseDir,segNom),'file')
+                system(['cp ',GS_SegName,' ',noiseDir]);
+            end
+            if ~exist(fullfile(noiseDir,maskNom),'file')
+                system(['cp ',GS_MaskName,' ',noiseDir]);
+            end  
+
             dirNames{ctr,1} = noiseDir;
             ctr = ctr + 1;
             

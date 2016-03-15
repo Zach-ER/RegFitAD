@@ -1,10 +1,20 @@
 %loads the diffusion data from the given directory 
-function [DW,Segs,bMat,bMask,S0] = load_diff_data(subjDir,segInds)
+function [DW,Segs,bMat,bMask,S0] = load_diff_data(subjDir,segInds,upsInd)
 
-DWname = fullfile(subjDir,'DW_Resampled.nii.gz');
-segName = fullfile(subjDir,'Segs_Resampled.nii.gz');
+if upsInd ==1 
+    DWname = fullfile(subjDir,'DW_Upsampled_Cubic.nii.gz');
+    segName = '/Users/zer/RegFitAD/data/HCPwStruct/RegFitXpts/Noise2/12_Readings/Downsampled_1/Noise_1/Segs_Resampled.nii.gz';    
+else
+    DWname = fullfile(subjDir,'DW_Resampled.nii.gz');
+    segName = fullfile(subjDir,'Segs_Resampled.nii.gz');
+end
 
-DTdir = fullfile(subjDir,'DT');
+if upsInd == 1
+    DTdir = fullfile(subjDir,'DThigh');
+else
+    DTdir = fullfile(subjDir,'DT');
+end
+
 V1Name = fullfile(DTdir,'DT_V1.nii.gz');
 V2Name = fullfile(DTdir,'DT_V2.nii.gz');
 S0Name = fullfile(DTdir,'DT_S0.nii.gz');

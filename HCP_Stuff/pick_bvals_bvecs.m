@@ -6,14 +6,14 @@ nIter = 10;
 %how many diffusion 'cycles' there are, = 108/6 = 18 in this case
 nTotalCycles = 18;
 lengthCycle  = 6;
-nResamps = 10; 
+nResamps = 11; 
 goldStandDir = fullfile(topDir,'GoldStand');
 bvals = load(fullfile(goldStandDir,'bvals'));
 bvecs = load(fullfile(goldStandDir,'bvecs'));
 
 ctr = 1;
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
-for nCycles = 2
+for nCycles = [2,5,8,12]
     nReadings = lengthCycle*nCycles;
     dataDirName = fullfile(topDir,[num2str(nReadings),'_Readings']);
     if ~exist(dataDirName,'dir')

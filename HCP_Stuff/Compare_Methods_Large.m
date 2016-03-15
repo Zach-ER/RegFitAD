@@ -1,10 +1,10 @@
-function [myMeth,classicalMeth] = Compare_Methods_Large(topDir,nSegs,thresh,dirBase)
+function [myMeth,classicalMeth,csvMat] = Compare_Methods_Large(topDir,nSegs,thresh,dirBase)
 %This will plot the estimates for the different approaches. For all
 %iterations of the comparison...
 lengthCycle  = 6;
 nIter = 10;
 segDims = 1:nSegs; %[1:3,5]; 
-nResamps = 8; 
+nResamps = 11; 
 
 % number of different b-val settings, iterations, nResamples, nTissues
 myMeth.FAs = zeros(nResamps,nSegs,nIter,5);
@@ -14,10 +14,20 @@ classicalMeth = myMeth;
 
 dtName = 'DTOutS0s300.txt';
 diffName = 'DiffOutsS0s300.txt';
+% 
+% dtName   = 'DTups.txt';
+% diffName = 'diffsUps.txt';
+% 
+diffName = 'diffOut_noiseless_sig200.txt';
+dtName   = 'DTOut_noiseless_sig200.txt';
 
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
-nCycles = [2,3,5,8,10];
-for whichCycle = 1:5
+nCycles = [2,5,8,12];
+%nCycles = [2,5,10];
+ctr =1 ; 
+
+csvMat = {'Method','nReadings','nResampling','nRegion','paramName','Thresh','Value'};
+for whichCycle = 1:length(nCycles)
     nReadings = lengthCycle*nCycles(whichCycle);
     dataDirName = fullfile(topDir,[num2str(nReadings),'_Readings']);
     for downSamplingNumber = 1:nResamps
@@ -31,12 +41,39 @@ for whichCycle = 1:5
             myMeth.FAs(downSamplingNumber,:,iIteration,whichCycle) = FA(:);
             myMeth.MDs(downSamplingNumber,:,iIteration,whichCycle) = MD(:);
             
+            for iRegion = segDims
+               a= row_of_outmat('MyMeth',nReadings,downSamplingNumber,iRegion,'FA','NA',FA(iRegion)); 
+               csvMat = [csvMat;a]; 
+               a = row_of_outmat('MyMeth',nReadings,downSamplingNumber,iRegion,'MD','NA',MD(iRegion)); 
+               csvMat = [csvMat;a]; 
+            end
+            
             [FA,MD] = get_classical(subjDir,thresh,segDims);
             classicalMeth.FAs(downSamplingNumber,:,iIteration,whichCycle) = FA(:);
             classicalMeth.MDs(downSamplingNumber,:,iIteration,whichCycle) = MD(:);
+            
+            for iRegion = segDims
+               a= row_of_outmat('Classical',nReadings,downSamplingNumber,...
+                   iRegion,'FA',thresh,FA(iRegion)); 
+               csvMat = [csvMat;a]; 
+               a = row_of_outmat('Classical',nReadings,downSamplingNumber,...
+                   iRegion,'MD',thresh,MD(iRegion)); 
+               csvMat = [csvMat;a]; 
+            end
+            
         end
     end
 end
+end
+
+%tries to get the data so R will have it. 
+function row = row_of_outmat(Method,nReadings,nResamp,nRegion,paramName,Thresh,Value)
+
+row = cell(1,7);
+row = {Method,num2str(nReadings),num2str(nResamp),num2str(nRegion),paramName,...
+    num2str(Thresh),num2str(Value)};
+
+
 end
 
 %% This collects my results from the directories

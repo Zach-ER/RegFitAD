@@ -19,14 +19,14 @@ hold on
 for i = 1:size(param,3)
    
     data = squeeze(param(:,:,i,nBval)); 
-    plot(data(:,1),'xr-'); 
-    plot(data(:,2),'xk-'); 
-    plot(data(:,3),'xg-'); 
-    plot(data(:,4),'xm-'); 
-    plot(data(:,5),'xb-'); 
-    plot(data(:,6),'xy-'); 
-    plot(data(:,7),'xc-'); 
-    plot(data(:,8),'xr-'); 
+    plot(data(:,1),'xr'); 
+    plot(data(:,2),'xk'); 
+    plot(data(:,3),'xg'); 
+    plot(data(:,4),'xm'); 
+    plot(data(:,5),'xb'); 
+    plot(data(:,6),'xy'); 
+    plot(data(:,7),'xc'); 
+    plot(data(:,8),'xr'); 
     
 end
 

@@ -1,6 +1,6 @@
-function run_reg_fit_itDir(subjDir,segInds,riceNoise,diffsOut,DTparamsOut,initParams)
+function run_reg_fit_itDir(subjDir,segInds,riceNoise,diffsOut,DTparamsOut,initParams,upsInd)
 
-[DW,Segs,bMat,bMask,S0] = load_diff_data(subjDir,segInds);
+[DW,Segs,bMat,bMask,S0] = load_diff_data(subjDir,segInds,upsInd);
 %%
 W = flattener_4d(Segs,bMask);
 DW = flattener_4d(DW,bMask);
