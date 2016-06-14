@@ -3,11 +3,13 @@
 
 function Run_Start_To_Finish
 
+addpath(genpath('~/spm12'));  
+
 segNos = 1:8; 
 expName = 'Noise200'; 
 segName = 'Segs_With_Fornix.nii.gz';%'Segs_With_Fornix_Divided.nii.gz'
-nResamps = 15; 
-scaleFacs=(linspace(1,20,nResamps)).^1/3;
+nResamps = 12; 
+scaleFacs=(linspace(1,20,nResamps)).^(1/3);
 riceNoise=200; 
 nIter = 10;
 
@@ -76,10 +78,10 @@ for i = 1:length(dirNames)
 end
 
 
-%linear or cubic
-order = 3;
-%upsample_in_directories(dirNames,order); 
-%dtiFit_Upsampled(dirNames,order); 
+%linear or cubic or 7th-order spline
+order = 7;
+upsample_in_directories(dirNames,order); 
+dtiFit_Upsampled(dirNames,order); 
 
 end
 
@@ -93,6 +95,9 @@ for iUpsamp = 1:length(dirNames)
     elseif order ==1 
         DWhigh = fullfile(dirNames{iUpsamp},'DW_Upsampled_Lin.nii.gz'); 
         DTnom = 'DTLin';
+    elseif order ==7
+        DWhigh = fullfile(dirNames{iUpsamp},'rDW_Resampled.nii.gz'); 
+        DTnom = 'DT';
     end
     if iUpsamp == 1
         maskName = fullfile(dirNames{iUpsamp},'Mask.nii.gz');
@@ -133,12 +138,22 @@ for iUpsamp = 1:length(dirNames)
        DWhigh = fullfile(dirNames{iUpsamp},'DW_Upsampled_Cubic.nii.gz');
    elseif order == 1 
        DWhigh = fullfile(dirNames{iUpsamp},'DW_Upsampled_Lin.nii.gz');
+   elseif order == 7
+       DWhigh = fullfile(dirNames{iUpsamp},'rDW_Resampled.nii');
    end
    
-    if ~exist(DWhigh,'file')
+    if ~exist(DWhigh,'file') && order <7
         sysArgs = ['source ~/.bash_profile; reg_resample -ref ',refVol,' -flo ',...
             DWlow,' -res ',DWhigh, ' -inter ', num2str(order)];
         system(sysArgs);
+    elseif ~exist([DWhigh,'.gz'],'file')
+        DWlowName = fullfile(dirNames{iUpsamp},'DW_Resampled.nii');
+        gunzip(DWlow);
+        resize_img(DWlowName,[1.25,1.25,1.25]',nan(2,3));
+        gzip(DWlowName);
+        gzip(DWhigh);
+        
+        delete(DWlowName); delete(DWhigh); 
     end
         
 

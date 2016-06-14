@@ -35,7 +35,7 @@ gsDir = os.path.join(topDir,'GoldStand')
 bvalName = os.path.join(gsDir,'bvals')
 bvecName = os.path.join(gsDir,'bvecs')
 
-for i in range(1,16):
+for i in range(1,13):
 	resampDir = os.path.join(gsDir,'downSampled_'+str(i))
 	refName = os.path.join(resampDir,maskName)
 	outName = os.path.join(resampDir,segOutName)

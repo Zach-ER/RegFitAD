@@ -15,15 +15,15 @@ classicalMeth = myMeth;
 dtName = 'DTOutS0s300.txt';
 diffName = 'DiffOutsS0s300.txt';
 % 
-% dtName   = 'DTups.txt';
-% diffName = 'diffsUps.txt';
+ dtName   = 'DTout.txt';
+ diffName = 'diffOut.txt';
 % 
-diffName = 'diffOut_noiseless_sig200.txt';
-dtName   = 'DTOut_noiseless_sig200.txt';
+% diffName = 'diffOut_noiseless_sig200.txt';
+% dtName   = 'DTOut_noiseless_sig200.txt';
 
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
 nCycles = [2,5,8,12];
-%nCycles = [2,5,10];
+nCycles = [2,5,10];
 ctr =1 ; 
 
 csvMat = {'Method','nReadings','nResampling','nRegion','paramName','Thresh','Value'};

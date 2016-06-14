@@ -18,7 +18,7 @@ seg = load_untouch_nii(segName);
 csvMat = {'Method','nReadings','nResampling','nRegion','paramName','Thresh','Value'};
 %each 'cycle' is a no-diff acquisition and 5 diffusion-weighted volumes.
 nCycles = [2,5,8,12];
-%nCycles = [2,5,10];
+nCycles = [2,5,10];
 for whichCycle = 1:length(nCycles)
     nReadings = lengthCycle*nCycles(whichCycle);
     dataDirName = fullfile(topDir,[num2str(nReadings),'_Readings']);
@@ -27,7 +27,7 @@ for whichCycle = 1:length(nCycles)
             downSampledNewDir = fullfile(dataDirName,['Downsampled_',num2str(downSamplingNumber)]);
             subjDir = fullfile(downSampledNewDir,[dirBase,num2str(iIteration)]);
            
-            [FA,MD] = get_classical(seg.img,subjDir,thresh,segDims,order);
+            [FA,MD] = get_classical(seg.img,subjDir,thresh,segDims,order,downSamplingNumber);
             classicalMeth.FAs(downSamplingNumber,:,iIteration,whichCycle) = FA(:);
             classicalMeth.MDs(downSamplingNumber,:,iIteration,whichCycle) = MD(:);
             
@@ -45,8 +45,13 @@ end
 
 
 %% this gets the results from the classical method,
-function  [FA,MD] = get_classical(seg,subjDir,thresh,segDims,order)
-dtFold = fullfile(subjDir,'DThigh'); 
+function  [FA,MD] = get_classical(seg,subjDir,thresh,segDims,order,downNumber)
+
+if downNumber == 1
+    dtFold = fullfile(subjDir,'DT');
+else
+    dtFold = fullfile(subjDir,'DThigh'); 
+end
 if order ==3
     FAname = fullfile(dtFold,'DT_FA.nii.gz');
     MDname = fullfile(dtFold,'DT_MD.nii.gz');
@@ -62,10 +67,23 @@ MDimg = load_untouch_nii(MDname); MDimg = MDimg.img;
 for iSegNo = 1:length(segDims)
     
     tissue = seg(:,:,:,segDims(iSegNo)) > thresh;
+    
+    %horrible kludge - please work! 
+    
+    if downNumber > 1
+        howBig = 9;
+        buffer = false(howBig,size(tissue,2),size(tissue,3));
+        newTissue = cat(1,buffer,tissue);
+        newTissue((end+1-howBig):end,:,:) = [];
+    else
+        newTissue = tissue;
+    end
+    %imagesc(newTissue(:,:,20)+FAimg(:,:,20))
+    
     %tissueCount = sum(tissue(:));
     %fprintf('Here we have %d of tissue %i\n',tissueCount,iSegNo);
-    FA(iSegNo) = mean(FAimg(tissue));
-    MD(iSegNo) = mean(MDimg(tissue));
+    FA(iSegNo) = mean(FAimg(newTissue));
+    MD(iSegNo) = mean(MDimg(newTissue));
     
 end
 end
